@@ -5,6 +5,7 @@
 """
 
 import os
+import re
 from llm_client import LLMClient
 from dsl_engine import DSLEngine
 
@@ -38,9 +39,46 @@ def main():
             if not user_input:
                 continue
             
-            # LLM意图识别
-            intent = llm_client.recognize_intent(user_input, dsl_engine.get_intents())
-            print(f"🔍 识别意图: {intent}")
+            # 先尝试简单规则匹配，规则匹配成功时优先使用，减少 LLM 误判
+            def _rule_based_intent(text: str):
+                t = text.strip()
+                if not t:
+                    return None
+                # 常见中文关键词规则
+                if re.search(r'我叫|我是', t):
+                    return 'provide_name'
+                if re.search(r'ORDER\d+', t, re.IGNORECASE):
+                    return 'provide_order_number'
+                if '时间' in t or '现在' in t:
+                    return 'ask_time'
+                if '日期' in t or '今天' in t:
+                    return 'ask_date'
+                if '查订单' in t or '查单' in t or ("订单" in t and '查询' in t):
+                    return 'check_order'
+                if '退货' in t:
+                    return 'return_request'
+                if '确认退货' in t or ('确认' in t and '退货' in t):
+                    return 'confirm_return'
+                if '转人工' in t or '人工' in t:
+                    return 'ask_human_agent'
+                if '投诉' in t:
+                    return 'complaint'
+                if '谢谢' in t or '感谢' in t:
+                    return 'thankyou'
+                if t.lower() in ('退出', 'quit', 'exit'):
+                    return 'reset'
+                if '帮助' in t or '帮我' in t:
+                    return 'help'
+                return None
+
+            rule_intent = _rule_based_intent(user_input)
+            if rule_intent:
+                intent = rule_intent
+                print(f"⚙️ 规则匹配意图: {intent}")
+            else:
+                # LLM意图识别
+                intent = llm_client.recognize_intent(user_input, dsl_engine.get_intents())
+                print(f"🔍 识别意图: {intent}")
             
             # DSL脚本引擎处理
             response = dsl_engine.process(intent, user_input)

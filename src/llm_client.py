@@ -16,26 +16,38 @@ class LLMClient:
         self.debug = debug
         self.use_llm = use_llm
 
-        # Resolve API key: explicit -> env -> fallback hardcoded (deprecated)
+        # Resolve API key: explicit -> env
         resolved_key = api_key or os.environ.get('DSL_AGENT_API_KEY')
-        if not resolved_key:
-            # Fallback to the previous hardcoded key for compatibility, but only use when necessary.
-            resolved_key = "d3f632f2-3225-4706-934d-339e12c9662f"
+
+        # Model and base URL can be configured via environment variables
+        self.model = os.environ.get('DSL_AGENT_MODEL', 'doubao-seed-1-6-251015')
+        base_url = os.environ.get('DSL_AGENT_BASE_URL', 'https://ark.cn-beijing.volces.com/api/v3')
 
         self.api_key = resolved_key
         self.client = None
 
-        # Initialize OpenAI-compatible client if enabled
+        # Initialize OpenAI-compatible client if enabled and API key is provided
         if self.use_llm:
-            if self.debug:
-                masked = self._mask_key(self.api_key)
-                print(f"[DEBUG] 初始化LLM客户端，使用API: {masked}")
-            self.client = OpenAI(
-                api_key=self.api_key,
-                base_url="https://ark.cn-beijing.volces.com/api/v3"
-            )
-            if self.debug:
-                print("[DEBUG] LLM客户端初始化完成")
+            if not self.api_key:
+                # Do not fall back to a hardcoded key. Prefer explicit configuration.
+                if self.debug:
+                    print("[WARN] LLM 模式被请求但未设置 `DSL_AGENT_API_KEY`，将回退到关键词匹配模式。")
+                self.use_llm = False
+            else:
+                if self.debug:
+                    masked = self._mask_key(self.api_key)
+                    print(f"[DEBUG] 初始化LLM客户端，使用API: {masked}")
+                try:
+                    self.client = OpenAI(
+                        api_key=self.api_key,
+                        base_url=base_url
+                    )
+                    if self.debug:
+                        print("[DEBUG] LLM客户端初始化完成")
+                except Exception as e:
+                    print(f"[ERROR] 初始化LLM客户端失败: {e}. 将回退到关键词匹配模式。")
+                    self.client = None
+                    self.use_llm = False
         else:
             if self.debug:
                 print("[DEBUG] 使用关键词匹配模式，LLM功能已禁用")

@@ -36,8 +36,6 @@ scene "main"
             set user_name = $name
             reply "很高兴认识您，$name！"
             reply "请问有什么可以帮您的？"
-        else
-            reply "请问您希望我怎么称呼您？"
         end
         log "用户提供姓名：$user_name"
 

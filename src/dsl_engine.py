@@ -654,6 +654,14 @@ class DSLEngine:
         for scene_name, intents_dict in self.scenes.items():
             if intent in intents_dict:
                 response = self._execute_actions(intents_dict[intent], user_input)
+                # 如果该意图用于响应等待输入（例如提供姓名、订单号等），
+                # 则在动作执行后清理等待状态，避免下一次输入被错误地映射回该意图。
+                try:
+                    if intent.startswith('provide_') or intent in ('describe_issue', 'confirm_return'):
+                        self.waiting_for = None
+                except Exception:
+                    pass
+
                 if response or not self.waiting_for:
                     return response or "请问您还有其他问题吗？"
 
