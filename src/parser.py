@@ -91,7 +91,7 @@ class Lexer:
             tokens.append(tok)
         return tokens
 
-class DSLParser:
+class Parser:
     def __init__(self, debug=False):
         self.lexer = Lexer()
         self.tokens = self.lexer.tokens
@@ -479,7 +479,7 @@ intent "help"
     log "用户请求帮助，当前状态：$global_status"
 """
     
-    parser = DSLParser(debug=False)
+    parser = Parser(debug=False)
     ast_dict = parser.parse(full_dsl)
     
     if ast_dict:
@@ -558,7 +558,7 @@ intent "greeting"
     set login_count = $login_count + 1
 """
     
-    parser = DSLParser(debug=False)
+    parser = Parser(debug=False)
     ast_dict = parser.parse(simple_dsl)
     
     if ast_dict:
