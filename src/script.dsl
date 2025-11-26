@@ -63,7 +63,7 @@ intent "complaint"
     set global_status = "complaint"
 
 intent "describe_issue"
-    reply "感谢您的反馈，我们已经记录：$user_input"
+    reply "感谢您的反馈，我们已经记录"
     reply "客服专员将尽快联系您处理"
     reply "紧急问题可拨打热线：400-123-4567"
     set global_status = ""
