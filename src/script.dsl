@@ -31,9 +31,8 @@ intent "provide_order_number"
 
         if $is_valid
             reply "订单 $user_input 验证成功！"
-            reply "订单状态：已发货"
             call delivery_date = calc_delivery($user_input)
-            reply "预计送达时间：$delivery_date"
+            reply "发货时间：$delivery_date"
             
             if $global_status == "check_order"
                 reply "订单查询完成，请问还需要其他帮助吗？"

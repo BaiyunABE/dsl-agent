@@ -47,19 +47,71 @@ class DSLEngine:
     def _init_builtin_functions(self):
         """初始化内置函数"""
         import re as _re
+        import csv
+        import os
         
-        # 订单相关函数
         def calc_delivery(order_id=None):
-            return "明天下午" if order_id else "未知"
+            """根据订单号计算配送时间"""
+            if not order_id or not isinstance(order_id, str):
+                return "未知"
+            
+            # 从根目录的order.csv文件读取订单信息
+            base_dir = os.path.dirname(os.path.dirname(__file__))  # 获取根目录
+            csv_file = os.path.join(base_dir, "data", "order.csv")  # 数据目录
+            
+            try:
+                with open(csv_file, 'r', encoding='utf-8') as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        # 检查订单号是否匹配
+                        csv_order_num = row.get('订单号', '').strip()
+                        input_order_num = order_id.replace('ORDER', '') if order_id.startswith('ORDER') else order_id
+                        
+                        if csv_order_num == input_order_num:
+                            delivery_time = row.get('发货时间', '未知').strip()
+                            return delivery_time if delivery_time else "未知"
+                
+                return "订单未找到"
+            except FileNotFoundError:
+                return "订单文件不存在"
+            except Exception as e:
+                self._debug(f"读取订单文件错误: {e}")
+                return "系统错误"
         
         def validate_order(order_id=None):
+            """验证订单号是否存在"""
             if not order_id or not isinstance(order_id, str):
                 return False
-            return bool(_re.fullmatch(r"ORDER\d+", order_id))
+            
+            # 检查格式
+            if not _re.fullmatch(r"ORDER\d+", order_id):
+                return False
+            
+            # 从根目录的order.csv文件验证订单是否存在
+            base_dir = os.path.dirname(os.path.dirname(__file__))  # 获取根目录
+            csv_file = os.path.join(base_dir, "data", "order.csv")  # 数据目录
+            
+            try:
+                with open(csv_file, 'r', encoding='utf-8') as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        csv_order_num = row.get('订单号', '').strip()
+                        input_order_num = order_id.replace('ORDER', '')
+                        
+                        if csv_order_num == input_order_num:
+                            return True
+                return False
+            except FileNotFoundError:
+                self._debug("订单文件不存在")
+                return False
+            except Exception as e:
+                self._debug(f"验证订单错误: {e}")
+                return False
         
         # 注册内置函数
         self.register_function('calc_delivery', calc_delivery)
         self.register_function('validate_order', validate_order)
+
 
     def register_function(self, name: str, func):
         """注册Python函数供DSL调用"""
@@ -140,7 +192,7 @@ class DSLEngine:
         """评估表达式节点"""
         if not isinstance(node, dict):
             return node
-        
+
         node_type = node.get('type', '')
         
         if node_type == 'String':
@@ -152,11 +204,6 @@ class DSLEngine:
             # 去掉$前缀
             if var_name.startswith('$'):
                 var_name = var_name[1:]
-            # 特殊处理 user_input 变量
-            if var_name == 'user_input':
-                # 这里需要从外部传入的 user_input 获取值
-                # 在 process 方法中已经设置了 self.variables['user_input']
-                return self.variables.get('user_input', '')
             return self.variables.get(var_name, '')
         elif node_type == 'Identifier':
             return node.get('value', '')
@@ -328,19 +375,25 @@ class DSLEngine:
         
         func_name = func_call_node.get('value', '')
         
-        # 准备参数
+        # 准备参数 - 修复参数解析
         args = []
         if func_call_node.get('children'):
             for arg_node in func_call_node['children']:
+                # 先评估参数表达式，获取实际值
                 arg_value = self._evaluate_expression(arg_node)
+                # 确保 user_input 被正确替换
+                if arg_value == '$user_input':
+                    arg_value = user_input
                 args.append(arg_value)
+        
+        self._debug(f"调用函数 {func_name}，参数: {args}")
         
         # 调用函数
         result = None
         if func_name in self.registered_functions:
             try:
                 result = self.registered_functions[func_name](*args)
-                self._debug(f"调用函数 {func_name}({args}) = {result}")
+                self._debug(f"函数调用结果: {func_name}({args}) = {result}")
             except Exception as e:
                 self._debug(f"函数调用错误: {e}")
         else:
@@ -459,9 +512,8 @@ intent "provide_order_number"
 
         if $is_valid
             reply "订单 $user_input 验证成功！"
-            reply "订单状态：已发货"
             call delivery_date = calc_delivery($user_input)
-            reply "预计送达时间：$delivery_date"
+            reply "发货时间：$delivery_date"
             
             if $global_status == "check_order"
                 reply "订单查询完成，请问还需要其他帮助吗？"
@@ -570,28 +622,145 @@ intent "help"
         with open(script_path, 'w', encoding='utf-8') as f:
             f.write(test_script)
         print(f"✅ 测试脚本已创建: {script_path}")
-        
+
         # 然后创建引擎
         engine = DSLEngine(script_path, debug=True)
-        
+
         # 测试可用意图
         intents = engine.get_intents()
         print(f"可用意图: {intents}")
-        
-        # 测试处理意图
+
+        print("\n" + "="*50)
+        print("测试1: 正常流程测试")
+        print("="*50)
+
+        # 测试正常流程
         response1 = engine.process("greeting")
-        print("响应1:")
+        print("响应1 - greeting:")
         print(response1)
         print(f"当前变量: {engine.get_variables()}")
-        
+
         response2 = engine.process("provide_order_number", "ORDER123")
-        print("响应2:")
+        print("响应2 - provide_order_number ORDER123:")
         print(response2)
         print(f"当前变量: {engine.get_variables()}")
-        
+
+        print("\n" + "="*50)
+        print("测试2: 边界值测试")
+        print("="*50)
+
+        # 测试边界值
+        response3 = engine.process("provide_order_number", "")  # 空订单号
+        print("响应3 - 空订单号:")
+        print(response3)
+
+        response4 = engine.process("provide_order_number", "ORDER")  # 只有ORDER前缀
+        print("响应4 - 只有ORDER前缀:")
+        print(response4)
+
+        response5 = engine.process("provide_order_number", "123")  # 没有ORDER前缀
+        print("响应5 - 没有ORDER前缀:")
+        print(response5)
+
+        print("\n" + "="*50)
+        print("测试3: 错误处理测试")
+        print("="*50)
+
+        # 测试错误处理
+        response6 = engine.process("unknown_intent")  # 不存在的意图
+        print("响应6 - 未知意图:")
+        print(response6)
+
+        # response7 = engine.process("provide_order_number", "ORDER123", "extra_param")  # 多余参数
+        # print("响应7 - 多余参数:")
+        # print(response7)
+
+        response8 = engine.process("greeting", "unexpected_param")  # 不应有参数的意图
+        print("响应8 - greeting带参数:")
+        print(response8)
+
+        print("\n" + "="*50)
+        print("测试4: 重复操作测试")
+        print("="*50)
+
+        # 测试重复操作
+        response9 = engine.process("provide_order_number", "ORDER456")  # 新订单号
+        print("响应9 - 新订单号ORDER456:")
+        print(response9)
+        print(f"当前变量: {engine.get_variables()}")
+
+        response10 = engine.process("provide_order_number", "ORDER456")  # 重复相同订单号
+        print("响应10 - 重复ORDER456:")
+        print(response10)
+
+        print("\n" + "="*50)
+        print("测试5: 特殊字符测试")
+        print("="*50)
+
+        # 测试特殊字符
+        special_cases = [
+            "ORDER 123",      # 带空格
+            "ORDER-123",      # 带连字符
+            "ORDER_123",      # 带下划线
+            "ORDER123 ",      # 末尾空格
+            " ORDER123",      # 开头空格
+            "ORDER123ABC",    # 字母数字混合
+            "123ORDER",       # 后缀ORDER
+        ]
+
+        for i, case in enumerate(special_cases, 1):
+            response = engine.process("provide_order_number", case)
+            print(f"响应{10+i} - 特殊案例 '{case}':")
+            print(response)
+
+        print("\n" + "="*50)
+        print("测试6: 变量状态测试")
+        print("="*50)
+
+        # 检查变量状态
+        variables = engine.get_variables()
+        print("最终变量状态:")
+        for key, value in variables.items():
+            print(f"  {key}: {value}")
+
+        print("\n" + "="*50)
+        print("测试7: 重置功能测试")
+        print("="*50)
+
         # 测试重置
         engine.reset()
-        print(f"重置后变量: {engine.get_variables()}")
+        reset_variables = engine.get_variables()
+        print(f"重置后变量: {reset_variables}")
+
+        # 重置后重新测试
+        response_reset = engine.process("greeting")
+        print("重置后greeting响应:")
+        print(response_reset)
+
+        print("\n" + "="*50)
+        print("测试8: 性能测试")
+        print("="*50)
+
+        # 简单性能测试
+        import time
+
+        start_time = time.time()
+        for i in range(100):  # 快速调用100次
+            engine.process("greeting")
+        end_time = time.time()
+
+        print(f"100次greeting调用耗时: {end_time - start_time:.4f}秒")
+
+        # 测试订单号查找性能
+        start_time = time.time()
+        for i in range(50):
+            engine.process("provide_order_number", f"ORDER{i:03d}")
+        end_time = time.time()
+        print(f"50次订单查询耗时: {end_time - start_time:.4f}秒")
+
+        print("\n" + "="*50)
+        print("测试完成")
+        print("="*50)
         
     except Exception as e:
         print(f"❌ 测试失败: {e}")
