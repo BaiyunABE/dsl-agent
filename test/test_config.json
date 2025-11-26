@@ -1,0 +1,13 @@
+{
+  "debug": true,
+  "script_file": "test_script.dsl",
+  "data_directory": "test_data",
+  "log_directory": "test_logs",
+  "test_cases": {
+    "greeting": ["你好", "hello", "嗨", "您好"],
+    "order_query": ["ORDER123", "订单号456", "查询订单789"],
+    "delivery_time": ["发货时间", "配送时间", "什么时候发货"],
+    "help": ["帮助", "怎么用", "功能"],
+    "exit": ["退出", "quit", "exit"]
+  }
+}

@@ -60,8 +60,7 @@ class DSLEngine:
                 return "未知"
             
             # 从根目录的order.csv文件读取订单信息
-            base_dir = os.path.dirname(os.path.dirname(__file__))  # 获取根目录
-            csv_file = os.path.join(base_dir, "data", "order.csv")  # 数据目录
+            csv_file = os.path.join(os.path.dirname(__file__), "data", "order.csv")  # 数据目录
             
             try:
                 with open(csv_file, 'r', encoding='utf-8') as f:
@@ -257,7 +256,7 @@ class DSLEngine:
             log_text = self._replace_variables(log_text, user_input)
             
             # 写入日志文件
-            log_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'log', 'todo.log')
+            log_file_path = os.path.join(os.path.dirname(__file__), 'log.log')
             os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
             
             # 带时间戳的日志
