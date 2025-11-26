@@ -1,10 +1,4 @@
-config
-    default_intent = "greeting"
-    timeout = 30
-    max_retries = 3
-
 var
-    login_count = 0
     last_order = ""
     global_status = ""
 
@@ -93,7 +87,6 @@ intent "thankyou"
 
 intent "reset"
     reply "系统已重置"
-    set login_count = 0
     set last_order = ""
     set global_status = ""
 

@@ -9,7 +9,7 @@ class Lexer:
     
     tokens = (
         # 区块关键字
-        'CONFIG', 'VAR', 'INTENT',
+        'VAR', 'INTENT',
         
         # 动作关键字
         'REPLY', 'SET', 'IF', 'ELSE', 'END', 'CALL', 'LOG',
@@ -23,7 +23,6 @@ class Lexer:
     )
     
     reserved = {
-        'config': 'CONFIG',
         'var': 'VAR', 
         'intent': 'INTENT',
         'reply': 'REPLY',
@@ -49,7 +48,6 @@ class Lexer:
     # 注释处理规则
     def t_COMMENT(self, t):
         r'\#.*'
-        print(f"Skipping comment: {t.value}")
         # 注释不返回token，直接跳过
         pass
 
@@ -127,27 +125,9 @@ class Parser:
             p[0] = [p[1]]
     
     def p_section(self, p):
-        '''section : config_section
-                  | var_section
+        '''section : var_section
                   | intent_section'''
         p[0] = p[1]
-    
-    # Config 区块
-    def p_config_section(self, p):
-        'config_section : CONFIG config_items'
-        p[0] = self.create_node('ConfigSection', p[2], lineno=p.lineno(1))
-    
-    def p_config_items(self, p):
-        '''config_items : config_item config_items
-                        | config_item'''
-        if len(p) == 3:
-            p[0] = [p[1]] + p[2]
-        else:
-            p[0] = [p[1]]
-    
-    def p_config_item(self, p):
-        'config_item : IDENTIFIER ASSIGN expression'
-        p[0] = self.create_node('ConfigItem', [p[3]], p[1], p.lineno(1))
     
     # Var 区块
     def p_var_section(self, p):
@@ -393,10 +373,6 @@ def test_simple_parser():
     print("\n=== 测试简化版语法分析器 ===")
     
     simple_dsl = """
-config
-    default_intent = "greeting"
-    timeout = 30
-
 var
     login_count = 0
 

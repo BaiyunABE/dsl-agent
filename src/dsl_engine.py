@@ -131,35 +131,20 @@ class DSLEngine:
                 raise Exception("脚本解析失败")
             
             self._debug("脚本解析成功")
-            self._extract_config_and_vars()
+            self._extract_vars()
             
         except FileNotFoundError:
             raise Exception(f"脚本文件不存在: {self.script_file}")
         except Exception as e:
             raise Exception(f"脚本加载失败: {e}")
 
-    def _extract_config_and_vars(self):
+    def _extract_vars(self):
         """从AST中提取配置和变量初始值"""
         if not self.ast or 'children' not in self.ast:
             return
         
         for section in self.ast['children']:
-            if section['type'] == 'ConfigSection':
-                self._process_config_section(section)
-            elif section['type'] == 'VarSection':
-                self._process_var_section(section)
-
-    def _process_config_section(self, config_section):
-        """处理配置区块"""
-        for item in config_section.get('children', []):
-            if item['type'] == 'ConfigItem':
-                var_name = item.get('value', '')
-                # 配置项的值在第一个子节点中
-                if item.get('children'):
-                    value_node = item['children'][0]
-                    value = self._evaluate_expression(value_node)
-                    self.variables[var_name] = value
-                    self._debug(f"配置: {var_name} = {value}")
+            self._process_var_section(section)
 
     def _process_var_section(self, var_section):
         """处理变量区块"""
@@ -442,7 +427,7 @@ class DSLEngine:
         self.current_intent = None
         self.waiting_for = None
         # 重新加载配置和变量初始值
-        self._extract_config_and_vars()
+        self._extract_vars()
 
     def get_variables(self) -> Dict[str, Any]:
         """获取当前变量状态"""
