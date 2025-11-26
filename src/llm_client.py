@@ -18,6 +18,7 @@ class LLMClient:
 
         # Resolve API key: explicit -> env
         resolved_key = api_key or os.environ.get('DSL_AGENT_API_KEY')
+        print("Resolved API Key:", resolved_key)  # Debug print to check API key resolution
 
         # Model and base URL can be configured via environment variables
         self.model = os.environ.get('DSL_AGENT_MODEL', 'doubao-seed-1-6-251015')

@@ -3,6 +3,7 @@
 基于语法分析器的解释执行引擎
 """
 
+import datetime
 import os
 import re
 from typing import Dict, Any, List, Optional
@@ -305,7 +306,23 @@ class DSLEngine:
             # 处理日志语句
             log_text = statement.get('value', '')
             log_text = self._replace_variables(log_text, user_input)
+            
+            # 控制台输出
             print(f"📋 [日志] {log_text}")
+            
+            # 写入日志文件
+            log_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'log', 'todo.log')
+            os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+            
+            # 带时间戳的日志
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_entry = f"[{timestamp}] {log_text}\n"
+            
+            try:
+                with open(log_file_path, 'a', encoding='utf-8') as log_file:
+                    log_file.write(log_entry)
+            except Exception as e:
+                print(f"❌ 写入日志文件失败: {e}")
             
         elif node_type == 'Call':
             # 处理函数调用

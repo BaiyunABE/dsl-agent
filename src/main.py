@@ -77,6 +77,7 @@ def main():
                 print(f"⚙️ 规则匹配意图: {intent}")
             else:
                 # LLM意图识别
+                print("⚙️ 规则匹配未命中，调用LLM进行意图识别...")
                 intent = llm_client.recognize_intent(user_input, dsl_engine.get_intents())
                 print(f"🔍 识别意图: {intent}")
             
