@@ -15,9 +15,8 @@ function
 intent "greeting"
     reply "您好！欢迎光临！"
     reply "请问有什么可以帮您？"
-    set login_count = $login_count + 1
     set global_status = ""
-    log "用户问候，登录次数：$login_count，状态：$global_status"
+    log "用户问候，状态：$global_status"
 
 intent "check_order"
     reply "正在查询订单信息..."
@@ -26,7 +25,7 @@ intent "check_order"
     log "订单查询请求，状态：$global_status"
 
 intent "provide_order_number"
-    if $user_input matches "ORDER\\\\d+"
+    if $user_input matches "ORDER\\d+"
         set last_order = $user_input
         call is_valid = validate_order($user_input)
 
