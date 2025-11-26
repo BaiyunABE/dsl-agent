@@ -203,10 +203,6 @@ class Parser:
                        | IF expression statements ELSE if_statement'''
         if len(p) == 5:  # if ... end
             p[0] = self.create_node('IfStatement', [p[2]] + p[3], lineno=p.lineno(1))
-        elif len(p) == 6:  # if ... else if ... (嵌套)
-            then_branch = self.create_node('ThenBranch', p[3], lineno=p.lineno(1))
-            else_branch = self.create_node('ElseBranch', [p[4]], lineno=p.lineno(1))
-            p[0] = self.create_node('IfStatement', [p[2], then_branch, else_branch], lineno=p.lineno(1))
         else:  # if ... else ... end
             then_branch = self.create_node('ThenBranch', p[3], lineno=p.lineno(1))
             else_branch = self.create_node('ElseBranch', p[5], lineno=p.lineno(1))

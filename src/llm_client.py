@@ -55,7 +55,7 @@ class LLMClient:
         return result
 
     def _llm_recognize_intent(self, user_input, available_intents):
-        """使用DeepSeek LLM API进行意图识别"""
+        """使用豆包 LLM API进行意图识别"""
         try:
             prompt = f"""请从以下意图列表中分类用户输入，只返回意图名称，不要返回其他内容。
 

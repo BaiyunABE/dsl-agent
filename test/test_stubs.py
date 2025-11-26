@@ -3,6 +3,11 @@
 测试桩文件
 """
 
+class MockLLMClient:
+    """模拟LLM客户端"""
+    def recognize_intent(self, user_input, available_intents):
+        return 'greeting'  # 总是返回问候意图
+
 class MockParser:
     """模拟语法分析器"""
     def parse(self, content):
