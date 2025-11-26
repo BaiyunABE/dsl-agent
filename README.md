@@ -79,10 +79,3 @@ pytest src\test_dsl_engine.py -q
 作者与联系方式
 
 - 仓库拥有者：`BaiyunABE`
-
-可选改进（我可以替你完成）：
-- 根据源码分析生成 `requirements.txt` 并添加到仓库；
-- 添加 GitHub Actions 工作流以在 push 时自动运行 `pytest`；
-- 为 `src\main.py` 增加 `--help` 或更完善的 CLI 帮助信息。
-
-如果你希望我继续其中一项，请告诉我你想先做哪一项。
