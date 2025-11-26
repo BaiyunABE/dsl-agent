@@ -46,6 +46,13 @@ class Lexer:
     t_RPAREN = r'\)'
     t_ignore = ' \t'
     
+    # 注释处理规则
+    def t_COMMENT(self, t):
+        r'\#.*'
+        print(f"Skipping comment: {t.value}")
+        # 注释不返回token，直接跳过
+        pass
+
     # 复杂token规则
     def t_IDENTIFIER(self, t):
         r'[a-zA-Z_][a-zA-Z0-9_]*'

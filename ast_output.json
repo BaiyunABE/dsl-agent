@@ -4,41 +4,41 @@
   "children": [
     {
       "type": "ConfigSection",
-      "lineno": 1,
+      "lineno": 2,
       "children": [
         {
           "type": "ConfigItem",
           "value": "default_intent",
-          "lineno": 2,
+          "lineno": 3,
           "children": [
             {
               "type": "String",
               "value": "greeting",
-              "lineno": 2
-            }
-          ]
-        },
-        {
-          "type": "ConfigItem",
-          "value": "timeout",
-          "lineno": 3,
-          "children": [
-            {
-              "type": "Number",
-              "value": 30,
               "lineno": 3
             }
           ]
         },
         {
           "type": "ConfigItem",
-          "value": "max_retries",
+          "value": "timeout",
           "lineno": 4,
           "children": [
             {
               "type": "Number",
-              "value": 3,
+              "value": 30,
               "lineno": 4
+            }
+          ]
+        },
+        {
+          "type": "ConfigItem",
+          "value": "max_retries",
+          "lineno": 5,
+          "children": [
+            {
+              "type": "Number",
+              "value": 3,
+              "lineno": 5
             }
           ]
         }
@@ -46,35 +46,23 @@
     },
     {
       "type": "VarSection",
-      "lineno": 6,
+      "lineno": 7,
       "children": [
         {
           "type": "VarDeclaration",
           "value": "login_count",
-          "lineno": 7,
+          "lineno": 8,
           "children": [
             {
               "type": "Number",
               "value": 0,
-              "lineno": 7
-            }
-          ]
-        },
-        {
-          "type": "VarDeclaration",
-          "value": "last_order",
-          "lineno": 8,
-          "children": [
-            {
-              "type": "String",
-              "value": "",
               "lineno": 8
             }
           ]
         },
         {
           "type": "VarDeclaration",
-          "value": "global_status",
+          "value": "last_order",
           "lineno": 9,
           "children": [
             {
@@ -83,32 +71,16 @@
               "lineno": 9
             }
           ]
-        }
-      ]
-    },
-    {
-      "type": "FunctionSection",
-      "lineno": 11,
-      "children": [
-        {
-          "type": "FunctionMapping",
-          "value": "calc_delivery",
-          "lineno": 12,
-          "children": [
-            {
-              "type": "String",
-              "value": "order_utils.calculate_delivery"
-            }
-          ]
         },
         {
-          "type": "FunctionMapping",
-          "value": "validate_order",
-          "lineno": 13,
+          "type": "VarDeclaration",
+          "value": "global_status",
+          "lineno": 10,
           "children": [
             {
               "type": "String",
-              "value": "order_utils.validate_order_id"
+              "value": "",
+              "lineno": 10
             }
           ]
         }
@@ -117,27 +89,27 @@
     {
       "type": "Intent",
       "value": "greeting",
-      "lineno": 15,
+      "lineno": 12,
       "children": [
         {
           "type": "Reply",
           "value": "您好！欢迎光临！",
-          "lineno": 16
+          "lineno": 13
         },
         {
           "type": "Reply",
           "value": "请问有什么可以帮您？",
-          "lineno": 17
+          "lineno": 14
         },
         {
           "type": "Set",
           "value": "global_status",
-          "lineno": 18,
+          "lineno": 15,
           "children": [
             {
               "type": "String",
               "value": "",
-              "lineno": 18
+              "lineno": 15
             }
           ]
         }
@@ -146,55 +118,55 @@
     {
       "type": "Intent",
       "value": "check_order",
-      "lineno": 20,
+      "lineno": 17,
       "children": [
         {
           "type": "Reply",
           "value": "正在查询订单信息...",
-          "lineno": 21
+          "lineno": 18
         },
         {
           "type": "Set",
           "value": "global_status",
-          "lineno": 22,
+          "lineno": 19,
           "children": [
             {
               "type": "String",
               "value": "check_order",
-              "lineno": 22
+              "lineno": 19
             }
           ]
         },
         {
           "type": "Reply",
           "value": "请问您要查询哪个订单号？",
-          "lineno": 23
+          "lineno": 20
         }
       ]
     },
     {
       "type": "Intent",
       "value": "provide_order_number",
-      "lineno": 25,
+      "lineno": 22,
       "children": [
         {
           "type": "Call",
-          "lineno": 26,
+          "lineno": 23,
           "children": [
             {
               "type": "Assignment",
-              "value": "order",
-              "lineno": 26,
+              "value": "order_id",
+              "lineno": 23,
               "children": [
                 {
                   "type": "FunctionCall",
                   "value": "extract_order_number",
-                  "lineno": 26,
+                  "lineno": 23,
                   "children": [
                     {
                       "type": "Variable",
                       "value": "$user_input",
-                      "lineno": 26
+                      "lineno": 23
                     }
                   ]
                 }
@@ -204,52 +176,58 @@
         },
         {
           "type": "IfStatement",
-          "lineno": 28,
+          "lineno": 24,
           "children": [
             {
-              "type": "Variable",
-              "value": "$order",
-              "lineno": 28
+              "type": "Comparison",
+              "value": "==",
+              "lineno": 24,
+              "children": [
+                {
+                  "type": "Variable",
+                  "value": "$order_id",
+                  "lineno": 24
+                },
+                {
+                  "type": "String",
+                  "value": "未找到订单号",
+                  "lineno": 24
+                }
+              ]
             },
             {
               "type": "ThenBranch",
-              "lineno": 28,
+              "lineno": 24,
               "children": [
                 {
-                  "type": "Set",
-                  "value": "last_order",
-                  "lineno": 29,
-                  "children": [
-                    {
-                      "type": "Variable",
-                      "value": "$order",
-                      "lineno": 29
-                    }
-                  ]
-                },
-                {
                   "type": "Reply",
-                  "value": "订单 $order 验证成功！",
-                  "lineno": 30
-                },
+                  "value": "请提供有效订单号（例如：ORDER123）。",
+                  "lineno": 25
+                }
+              ]
+            },
+            {
+              "type": "ElseBranch",
+              "lineno": 24,
+              "children": [
                 {
                   "type": "Call",
-                  "lineno": 31,
+                  "lineno": 27,
                   "children": [
                     {
                       "type": "Assignment",
                       "value": "delivery_date",
-                      "lineno": 31,
+                      "lineno": 27,
                       "children": [
                         {
                           "type": "FunctionCall",
                           "value": "calc_delivery",
-                          "lineno": 31,
+                          "lineno": 27,
                           "children": [
                             {
                               "type": "Variable",
-                              "value": "$order",
-                              "lineno": 31
+                              "value": "$order_id",
+                              "lineno": 27
                             }
                           ]
                         }
@@ -258,88 +236,134 @@
                   ]
                 },
                 {
-                  "type": "Reply",
-                  "value": "发货时间：$delivery_date",
-                  "lineno": 32
-                },
-                {
                   "type": "IfStatement",
-                  "lineno": 34,
+                  "lineno": 28,
                   "children": [
                     {
                       "type": "Comparison",
                       "value": "==",
-                      "lineno": 34,
+                      "lineno": 28,
                       "children": [
                         {
                           "type": "Variable",
-                          "value": "$global_status",
-                          "lineno": 34
+                          "value": "$delivery_date",
+                          "lineno": 28
                         },
                         {
                           "type": "String",
-                          "value": "check_order",
-                          "lineno": 34
+                          "value": "订单未找到",
+                          "lineno": 28
                         }
                       ]
                     },
                     {
                       "type": "ThenBranch",
-                      "lineno": 34,
+                      "lineno": 28,
                       "children": [
                         {
                           "type": "Reply",
-                          "value": "订单查询完成，请问还需要其他帮助吗？",
-                          "lineno": 35
+                          "value": "订单 $order_id 未找到",
+                          "lineno": 29
                         }
                       ]
                     },
                     {
                       "type": "ElseBranch",
-                      "lineno": 34,
+                      "lineno": 28,
+                      "children": [
+                        {
+                          "type": "Set",
+                          "value": "last_order",
+                          "lineno": 31,
+                          "children": [
+                            {
+                              "type": "Variable",
+                              "value": "$order_id",
+                              "lineno": 31
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "订单 $order_id 验证成功！",
+                          "lineno": 32
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "发货时间：$delivery_date",
+                          "lineno": 33
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "IfStatement",
+                  "lineno": 36,
+                  "children": [
+                    {
+                      "type": "Comparison",
+                      "value": "==",
+                      "lineno": 36,
+                      "children": [
+                        {
+                          "type": "Variable",
+                          "value": "$global_status",
+                          "lineno": 36
+                        },
+                        {
+                          "type": "String",
+                          "value": "check_order",
+                          "lineno": 36
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ThenBranch",
+                      "lineno": 36,
+                      "children": [
+                        {
+                          "type": "Reply",
+                          "value": "订单查询完成，请问还需要其他帮助吗？",
+                          "lineno": 37
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ElseBranch",
+                      "lineno": 36,
                       "children": [
                         {
                           "type": "IfStatement",
-                          "lineno": 37,
+                          "lineno": 39,
                           "children": [
                             {
                               "type": "Comparison",
                               "value": "==",
-                              "lineno": 37,
+                              "lineno": 39,
                               "children": [
                                 {
                                   "type": "Variable",
                                   "value": "$global_status",
-                                  "lineno": 37
+                                  "lineno": 39
                                 },
                                 {
                                   "type": "String",
                                   "value": "return_request",
-                                  "lineno": 37
+                                  "lineno": 39
                                 }
                               ]
                             },
                             {
                               "type": "Reply",
                               "value": "订单信息已确认，是否为此订单申请退货？",
-                              "lineno": 38
+                              "lineno": 40
                             }
                           ]
                         }
                       ]
                     }
                   ]
-                }
-              ]
-            },
-            {
-              "type": "ElseBranch",
-              "lineno": 28,
-              "children": [
-                {
-                  "type": "Reply",
-                  "value": "订单号 $user_input 无效或不存在",
-                  "lineno": 42
                 }
               ]
             }
