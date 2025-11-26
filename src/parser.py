@@ -7,27 +7,24 @@ class Lexer:
         self.lexer = None
         self.build()
     
-    # Token 列表 - 添加MATCHES支持
     tokens = (
         # 区块关键字
-        'CONFIG', 'VAR', 'FUNCTION', 'INTENT',
+        'CONFIG', 'VAR', 'INTENT',
         
         # 动作关键字
         'REPLY', 'SET', 'IF', 'ELSE', 'END', 'CALL', 'LOG',
         
         # 运算符和分隔符
         'ASSIGN', 'EQUALS', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE',
-        'LPAREN', 'RPAREN', 'MATCHES',  # 添加MATCHES支持
+        'LPAREN', 'RPAREN',
         
         # 字面量
         'IDENTIFIER', 'STRING', 'NUMBER', 'VARIABLE',
     )
     
-    # 关键字映射 - 添加matches支持
     reserved = {
         'config': 'CONFIG',
         'var': 'VAR', 
-        'function': 'FUNCTION',
         'intent': 'INTENT',
         'reply': 'REPLY',
         'set': 'SET',
@@ -36,7 +33,6 @@ class Lexer:
         'end': 'END',
         'call': 'CALL',
         'log': 'LOG',
-        'matches': 'MATCHES',  # 添加matches支持
     }
     
     # 简单token规则
@@ -48,7 +44,6 @@ class Lexer:
     t_DIVIDE = r'/'
     t_LPAREN = r'\('
     t_RPAREN = r'\)'
-    t_MATCHES = r'matches'  # 添加matches token
     t_ignore = ' \t'
     
     # 复杂token规则
@@ -127,7 +122,6 @@ class Parser:
     def p_section(self, p):
         '''section : config_section
                   | var_section
-                  | function_section
                   | intent_section'''
         p[0] = p[1]
     
@@ -164,23 +158,6 @@ class Parser:
     def p_var_declaration(self, p):
         'var_declaration : IDENTIFIER ASSIGN expression'
         p[0] = self.create_node('VarDeclaration', [p[3]], p[1], p.lineno(1))
-    
-    # Function 区块
-    def p_function_section(self, p):
-        'function_section : FUNCTION function_mappings'
-        p[0] = self.create_node('FunctionSection', p[2], lineno=p.lineno(1))
-    
-    def p_function_mappings(self, p):
-        '''function_mappings : function_mapping function_mappings
-                            | function_mapping'''
-        if len(p) == 3:
-            p[0] = [p[1]] + p[2]
-        else:
-            p[0] = [p[1]]
-    
-    def p_function_mapping(self, p):
-        'function_mapping : IDENTIFIER ASSIGN STRING'
-        p[0] = self.create_node('FunctionMapping', [self.create_node('String', value=p[3])], p[1], p.lineno(1))
     
     # Intent 区块
     def p_intent_section(self, p):
@@ -223,7 +200,7 @@ class Parser:
     
     def p_assignment(self, p):
         '''assignment : IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN
-                      | IDENTIFIER ASSIGN IDENTIFIER LPAREN VARIABLE RPAREN'''
+                      | IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN'''
         # call result = function_name() 或 call result = function_name($user_input)
         if len(p) == 6:  # 无参数
             func_call = self.create_node('FunctionCall', value=p[3], lineno=p.lineno(1))
@@ -251,7 +228,6 @@ class Parser:
     # 表达式
     def p_expression(self, p):
         '''expression : comparison_expression
-                     | matches_expression
                      | arithmetic_expression
                      | simple_expression'''
         p[0] = p[1]
@@ -259,10 +235,6 @@ class Parser:
     def p_comparison_expression(self, p):
         'comparison_expression : simple_expression EQUALS simple_expression'
         p[0] = self.create_node('Comparison', [p[1], p[3]], '==', p.lineno(2))
-    
-    def p_matches_expression(self, p):
-        'matches_expression : simple_expression MATCHES STRING'
-        p[0] = self.create_node('Matches', [p[1], p[3]], 'matches', p.lineno(2))
     
     def p_arithmetic_expression(self, p):
         '''arithmetic_expression : expression PLUS expression
@@ -378,7 +350,6 @@ def test_full_script():
         sets = find_nodes_by_type(ast_dict, 'Set')
         replies = find_nodes_by_type(ast_dict, 'Reply')
         logs = find_nodes_by_type(ast_dict, 'Log')
-        matches = find_nodes_by_type(ast_dict, 'Matches')
         
         print(f"\n关键结构统计:")
         print(f"意图定义: {len(intents)} 个")
@@ -387,7 +358,6 @@ def test_full_script():
         print(f"赋值操作: {len(sets)} 个")
         print(f"回复语句: {len(replies)} 个")
         print(f"日志语句: {len(logs)} 个")
-        print(f"匹配操作: {len(matches)} 个")
         
         # 显示前几个意图的结构
         print(f"\n前3个意图的结构:")
@@ -426,6 +396,7 @@ var
 intent "greeting"
     reply "Hello World"
     set login_count = $login_count + 1
+    call res = extract_order_number($user_input)
 """
     
     parser = Parser(debug=False)

@@ -8,10 +8,6 @@ var
     last_order = ""
     global_status = ""
 
-function
-    calc_delivery = "order_utils.calculate_delivery"
-    validate_order = "order_utils.validate_order_id"
-
 intent "greeting"
     reply "您好！欢迎光临！"
     reply "请问有什么可以帮您？"
@@ -23,27 +19,26 @@ intent "check_order"
     reply "请问您要查询哪个订单号？"
 
 intent "provide_order_number"
-    if $user_input matches "ORDER\\d+"
-        set last_order = $user_input
-        call is_valid = validate_order($user_input)
-
-        if $is_valid
-            reply "订单 $user_input 验证成功！"
-            call delivery_date = calc_delivery($user_input)
-            reply "发货时间：$delivery_date"
-            
-            if $global_status == "check_order"
-                reply "订单查询完成，请问还需要其他帮助吗？"
-            else
-                if $global_status == "return_request"
-                    reply "订单信息已确认，是否为此订单申请退货？"
-                end
-            end
-        else
-            reply "订单号 $user_input 无效或不存在"
-        end
+    call order_id = extract_order_number($user_input)
+    if $order_id == "未找到订单号"
+        reply "请提供有效订单号（例如：ORDER123）。"
     else
-        reply "订单号格式不正确，请提供类似 ORDER123 的格式"
+        call delivery_date = calc_delivery($order_id)
+        if $delivery_date == "订单未找到"
+            reply "订单 $order_id 未找到"
+        else
+            set last_order = $order_id
+            reply "订单 $order_id 验证成功！"
+            reply "发货时间：$delivery_date"
+        end
+        
+        if $global_status == "check_order"
+            reply "订单查询完成，请问还需要其他帮助吗？"
+        else
+            if $global_status == "return_request"
+                reply "订单信息已确认，是否为此订单申请退货？"
+            end
+        end
     end
 
 intent "return_request"
@@ -80,7 +75,7 @@ intent "unknown"
     else
         if $global_status == "return_request"
             reply "抱歉，我没有理解您关于退货的请求"
-            reply "请提供订单号或确认是否申请退货"
+            reply "请提供订单号（格式：ORDER123）或确认是否申请退货"
         else
             reply "抱歉，我没有完全理解您的意思"
             reply "您可以尝试以下方式："

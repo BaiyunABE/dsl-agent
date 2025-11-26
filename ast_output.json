@@ -1,0 +1,835 @@
+{
+  "type": "Script",
+  "lineno": 1,
+  "children": [
+    {
+      "type": "ConfigSection",
+      "lineno": 1,
+      "children": [
+        {
+          "type": "ConfigItem",
+          "value": "default_intent",
+          "lineno": 2,
+          "children": [
+            {
+              "type": "String",
+              "value": "greeting",
+              "lineno": 2
+            }
+          ]
+        },
+        {
+          "type": "ConfigItem",
+          "value": "timeout",
+          "lineno": 3,
+          "children": [
+            {
+              "type": "Number",
+              "value": 30,
+              "lineno": 3
+            }
+          ]
+        },
+        {
+          "type": "ConfigItem",
+          "value": "max_retries",
+          "lineno": 4,
+          "children": [
+            {
+              "type": "Number",
+              "value": 3,
+              "lineno": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "VarSection",
+      "lineno": 6,
+      "children": [
+        {
+          "type": "VarDeclaration",
+          "value": "login_count",
+          "lineno": 7,
+          "children": [
+            {
+              "type": "Number",
+              "value": 0,
+              "lineno": 7
+            }
+          ]
+        },
+        {
+          "type": "VarDeclaration",
+          "value": "last_order",
+          "lineno": 8,
+          "children": [
+            {
+              "type": "String",
+              "value": "",
+              "lineno": 8
+            }
+          ]
+        },
+        {
+          "type": "VarDeclaration",
+          "value": "global_status",
+          "lineno": 9,
+          "children": [
+            {
+              "type": "String",
+              "value": "",
+              "lineno": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FunctionSection",
+      "lineno": 11,
+      "children": [
+        {
+          "type": "FunctionMapping",
+          "value": "calc_delivery",
+          "lineno": 12,
+          "children": [
+            {
+              "type": "String",
+              "value": "order_utils.calculate_delivery"
+            }
+          ]
+        },
+        {
+          "type": "FunctionMapping",
+          "value": "validate_order",
+          "lineno": 13,
+          "children": [
+            {
+              "type": "String",
+              "value": "order_utils.validate_order_id"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Intent",
+      "value": "greeting",
+      "lineno": 15,
+      "children": [
+        {
+          "type": "Reply",
+          "value": "您好！欢迎光临！",
+          "lineno": 16
+        },
+        {
+          "type": "Reply",
+          "value": "请问有什么可以帮您？",
+          "lineno": 17
+        },
+        {
+          "type": "Set",
+          "value": "global_status",
+          "lineno": 18,
+          "children": [
+            {
+              "type": "String",
+              "value": "",
+              "lineno": 18
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Intent",
+      "value": "check_order",
+      "lineno": 20,
+      "children": [
+        {
+          "type": "Reply",
+          "value": "正在查询订单信息...",
+          "lineno": 21
+        },
+        {
+          "type": "Set",
+          "value": "global_status",
+          "lineno": 22,
+          "children": [
+            {
+              "type": "String",
+              "value": "check_order",
+              "lineno": 22
+            }
+          ]
+        },
+        {
+          "type": "Reply",
+          "value": "请问您要查询哪个订单号？",
+          "lineno": 23
+        }
+      ]
+    },
+    {
+      "type": "Intent",
+      "value": "provide_order_number",
+      "lineno": 25,
+      "children": [
+        {
+          "type": "Call",
+          "lineno": 26,
+          "children": [
+            {
+              "type": "Assignment",
+              "value": "order",
+              "lineno": 26,
+              "children": [
+                {
+                  "type": "FunctionCall",
+                  "value": "extract_order_number",
+                  "lineno": 26,
+                  "children": [
+                    {
+                      "type": "Variable",
+                      "value": "$user_input",
+                      "lineno": 26
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "IfStatement",
+          "lineno": 28,
+          "children": [
+            {
+              "type": "Variable",
+              "value": "$order",
+              "lineno": 28
+            },
+            {
+              "type": "ThenBranch",
+              "lineno": 28,
+              "children": [
+                {
+                  "type": "Set",
+                  "value": "last_order",
+                  "lineno": 29,
+                  "children": [
+                    {
+                      "type": "Variable",
+                      "value": "$order",
+                      "lineno": 29
+                    }
+                  ]
+                },
+                {
+                  "type": "Reply",
+                  "value": "订单 $order 验证成功！",
+                  "lineno": 30
+                },
+                {
+                  "type": "Call",
+                  "lineno": 31,
+                  "children": [
+                    {
+                      "type": "Assignment",
+                      "value": "delivery_date",
+                      "lineno": 31,
+                      "children": [
+                        {
+                          "type": "FunctionCall",
+                          "value": "calc_delivery",
+                          "lineno": 31,
+                          "children": [
+                            {
+                              "type": "Variable",
+                              "value": "$order",
+                              "lineno": 31
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "Reply",
+                  "value": "发货时间：$delivery_date",
+                  "lineno": 32
+                },
+                {
+                  "type": "IfStatement",
+                  "lineno": 34,
+                  "children": [
+                    {
+                      "type": "Comparison",
+                      "value": "==",
+                      "lineno": 34,
+                      "children": [
+                        {
+                          "type": "Variable",
+                          "value": "$global_status",
+                          "lineno": 34
+                        },
+                        {
+                          "type": "String",
+                          "value": "check_order",
+                          "lineno": 34
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ThenBranch",
+                      "lineno": 34,
+                      "children": [
+                        {
+                          "type": "Reply",
+                          "value": "订单查询完成，请问还需要其他帮助吗？",
+                          "lineno": 35
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ElseBranch",
+                      "lineno": 34,
+                      "children": [
+                        {
+                          "type": "IfStatement",
+                          "lineno": 37,
+                          "children": [
+                            {
+                              "type": "Comparison",
+                              "value": "==",
+                              "lineno": 37,
+                              "children": [
+                                {
+                                  "type": "Variable",
+                                  "value": "$global_status",
+                                  "lineno": 37
+                                },
+                                {
+                                  "type": "String",
+                                  "value": "return_request",
+                                  "lineno": 37
+                                }
+                              ]
+                            },
+                            {
+                              "type": "Reply",
+                              "value": "订单信息已确认，是否为此订单申请退货？",
+                              "lineno": 38
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "ElseBranch",
+              "lineno": 28,
+              "children": [
+                {
+                  "type": "Reply",
+                  "value": "订单号 $user_input 无效或不存在",
+                  "lineno": 42
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Intent",
+      "value": "return_request",
+      "lineno": 45,
+      "children": [
+        {
+          "type": "Reply",
+          "value": "了解您要退货的需求",
+          "lineno": 46
+        },
+        {
+          "type": "Set",
+          "value": "global_status",
+          "lineno": 47,
+          "children": [
+            {
+              "type": "String",
+              "value": "return_request",
+              "lineno": 47
+            }
+          ]
+        },
+        {
+          "type": "Reply",
+          "value": "请提供需要退货的订单号",
+          "lineno": 48
+        }
+      ]
+    },
+    {
+      "type": "Intent",
+      "value": "confirm_return",
+      "lineno": 50,
+      "children": [
+        {
+          "type": "Reply",
+          "value": "已为您提交订单 $last_order 的退货申请",
+          "lineno": 51
+        },
+        {
+          "type": "Reply",
+          "value": "客服将在24小时内联系您处理后续事宜",
+          "lineno": 52
+        },
+        {
+          "type": "Set",
+          "value": "global_status",
+          "lineno": 53,
+          "children": [
+            {
+              "type": "String",
+              "value": "",
+              "lineno": 53
+            }
+          ]
+        },
+        {
+          "type": "Log",
+          "value": "退货申请：$last_order",
+          "lineno": 54
+        }
+      ]
+    },
+    {
+      "type": "Intent",
+      "value": "complaint",
+      "lineno": 56,
+      "children": [
+        {
+          "type": "Reply",
+          "value": "抱歉给您带来不便",
+          "lineno": 57
+        },
+        {
+          "type": "Reply",
+          "value": "请简要描述您遇到的问题：",
+          "lineno": 58
+        },
+        {
+          "type": "Set",
+          "value": "global_status",
+          "lineno": 59,
+          "children": [
+            {
+              "type": "String",
+              "value": "complaint",
+              "lineno": 59
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Intent",
+      "value": "describe_issue",
+      "lineno": 61,
+      "children": [
+        {
+          "type": "Reply",
+          "value": "感谢您的反馈，我们已经记录",
+          "lineno": 62
+        },
+        {
+          "type": "Reply",
+          "value": "客服专员将尽快联系您处理",
+          "lineno": 63
+        },
+        {
+          "type": "Reply",
+          "value": "紧急问题可拨打热线：400-123-4567",
+          "lineno": 64
+        },
+        {
+          "type": "Set",
+          "value": "global_status",
+          "lineno": 65,
+          "children": [
+            {
+              "type": "String",
+              "value": "",
+              "lineno": 65
+            }
+          ]
+        },
+        {
+          "type": "Log",
+          "value": "用户投诉：$user_input",
+          "lineno": 66
+        }
+      ]
+    },
+    {
+      "type": "Intent",
+      "value": "ask_human_agent",
+      "lineno": 68,
+      "children": [
+        {
+          "type": "Reply",
+          "value": "正在为您转接人工客服...",
+          "lineno": 69
+        },
+        {
+          "type": "Log",
+          "value": "请求人工客服",
+          "lineno": 70
+        }
+      ]
+    },
+    {
+      "type": "Intent",
+      "value": "unknown",
+      "lineno": 72,
+      "children": [
+        {
+          "type": "IfStatement",
+          "lineno": 73,
+          "children": [
+            {
+              "type": "Comparison",
+              "value": "==",
+              "lineno": 73,
+              "children": [
+                {
+                  "type": "Variable",
+                  "value": "$global_status",
+                  "lineno": 73
+                },
+                {
+                  "type": "String",
+                  "value": "check_order",
+                  "lineno": 73
+                }
+              ]
+            },
+            {
+              "type": "ThenBranch",
+              "lineno": 73,
+              "children": [
+                {
+                  "type": "Reply",
+                  "value": "抱歉，我没有理解您关于订单查询的请求",
+                  "lineno": 74
+                },
+                {
+                  "type": "Reply",
+                  "value": "请提供订单号（格式：ORDER123）或说明您的需求",
+                  "lineno": 75
+                }
+              ]
+            },
+            {
+              "type": "ElseBranch",
+              "lineno": 73,
+              "children": [
+                {
+                  "type": "IfStatement",
+                  "lineno": 77,
+                  "children": [
+                    {
+                      "type": "Comparison",
+                      "value": "==",
+                      "lineno": 77,
+                      "children": [
+                        {
+                          "type": "Variable",
+                          "value": "$global_status",
+                          "lineno": 77
+                        },
+                        {
+                          "type": "String",
+                          "value": "return_request",
+                          "lineno": 77
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ThenBranch",
+                      "lineno": 77,
+                      "children": [
+                        {
+                          "type": "Reply",
+                          "value": "抱歉，我没有理解您关于退货的请求",
+                          "lineno": 78
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "请提供订单号（格式：ORDER123）或确认是否申请退货",
+                          "lineno": 79
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ElseBranch",
+                      "lineno": 77,
+                      "children": [
+                        {
+                          "type": "Reply",
+                          "value": "抱歉，我没有完全理解您的意思",
+                          "lineno": 81
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "您可以尝试以下方式：",
+                          "lineno": 82
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "1. 查询订单状态",
+                          "lineno": 83
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "2. 申请退货",
+                          "lineno": 84
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "3. 联系人工客服",
+                          "lineno": 85
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "请问您需要哪项服务？",
+                          "lineno": 86
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Intent",
+      "value": "thankyou",
+      "lineno": 90,
+      "children": [
+        {
+          "type": "Reply",
+          "value": "不客气！",
+          "lineno": 91
+        },
+        {
+          "type": "Reply",
+          "value": "祝您生活愉快！",
+          "lineno": 92
+        },
+        {
+          "type": "Set",
+          "value": "global_status",
+          "lineno": 93,
+          "children": [
+            {
+              "type": "String",
+              "value": "",
+              "lineno": 93
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Intent",
+      "value": "reset",
+      "lineno": 95,
+      "children": [
+        {
+          "type": "Reply",
+          "value": "系统已重置",
+          "lineno": 96
+        },
+        {
+          "type": "Set",
+          "value": "login_count",
+          "lineno": 97,
+          "children": [
+            {
+              "type": "Number",
+              "value": 0,
+              "lineno": 97
+            }
+          ]
+        },
+        {
+          "type": "Set",
+          "value": "last_order",
+          "lineno": 98,
+          "children": [
+            {
+              "type": "String",
+              "value": "",
+              "lineno": 98
+            }
+          ]
+        },
+        {
+          "type": "Set",
+          "value": "global_status",
+          "lineno": 99,
+          "children": [
+            {
+              "type": "String",
+              "value": "",
+              "lineno": 99
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Intent",
+      "value": "help",
+      "lineno": 101,
+      "children": [
+        {
+          "type": "IfStatement",
+          "lineno": 102,
+          "children": [
+            {
+              "type": "Comparison",
+              "value": "==",
+              "lineno": 102,
+              "children": [
+                {
+                  "type": "Variable",
+                  "value": "$global_status",
+                  "lineno": 102
+                },
+                {
+                  "type": "String",
+                  "value": "check_order",
+                  "lineno": 102
+                }
+              ]
+            },
+            {
+              "type": "ThenBranch",
+              "lineno": 102,
+              "children": [
+                {
+                  "type": "Reply",
+                  "value": "=== 订单查询帮助 ===",
+                  "lineno": 103
+                },
+                {
+                  "type": "Reply",
+                  "value": "请提供订单号（格式：ORDER123）",
+                  "lineno": 104
+                },
+                {
+                  "type": "Reply",
+                  "value": "或输入'返回'回到主菜单",
+                  "lineno": 105
+                }
+              ]
+            },
+            {
+              "type": "ElseBranch",
+              "lineno": 102,
+              "children": [
+                {
+                  "type": "IfStatement",
+                  "lineno": 107,
+                  "children": [
+                    {
+                      "type": "Comparison",
+                      "value": "==",
+                      "lineno": 107,
+                      "children": [
+                        {
+                          "type": "Variable",
+                          "value": "$global_status",
+                          "lineno": 107
+                        },
+                        {
+                          "type": "String",
+                          "value": "return_request",
+                          "lineno": 107
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ThenBranch",
+                      "lineno": 107,
+                      "children": [
+                        {
+                          "type": "Reply",
+                          "value": "=== 退货申请帮助 ===",
+                          "lineno": 108
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "请提供订单号或确认退货申请",
+                          "lineno": 109
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "或输入'返回'取消退货流程",
+                          "lineno": 110
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ElseBranch",
+                      "lineno": 107,
+                      "children": [
+                        {
+                          "type": "Reply",
+                          "value": "=== 可用功能 ===",
+                          "lineno": 112
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "订单管理 - 查询订单、退货申请",
+                          "lineno": 113
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "人工客服 - 转接人工服务",
+                          "lineno": 114
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "系统重置 - 清除当前会话数据",
+                          "lineno": 115
+                        },
+                        {
+                          "type": "Reply",
+                          "value": "帮助信息 - 显示本提示",
+                          "lineno": 116
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

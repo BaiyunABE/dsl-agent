@@ -6,6 +6,7 @@
 import datetime
 import os
 import re
+import csv
 from typing import Dict, Any, List, Optional
 
 # 导入parser模块
@@ -30,7 +31,6 @@ class DSLEngine:
         self.debug = debug
         self.ast = None  # 抽象语法树
         self.variables = {}  # 变量存储
-        self.functions = {}  # 函数映射
         self.registered_functions = {}  # 注册的Python函数
         self.current_intent = None  # 当前意图
         self.waiting_for = None  # 等待输入类型
@@ -47,10 +47,13 @@ class DSLEngine:
 
     def _init_builtin_functions(self):
         """初始化内置函数"""
-        import re as _re
-        import csv
-        import os
-        
+
+        def extract_order_number(text=None):
+            # 匹配 ORDER 后面跟着数字的模式
+            pattern = r'ORDER\d+'
+            match = re.search(pattern, text)
+            return "未找到订单号" if not match else match.group()
+
         def calc_delivery(order_id=None):
             """根据订单号计算配送时间"""
             if not order_id or not isinstance(order_id, str):
@@ -79,13 +82,8 @@ class DSLEngine:
                 self._debug(f"读取订单文件错误: {e}")
                 return "系统错误"
         
-        def validate_order(order_id=None):
             """验证订单号是否存在"""
             if not order_id or not isinstance(order_id, str):
-                return False
-            
-            # 检查格式
-            if not _re.fullmatch(r"ORDER\d+", order_id):
                 return False
             
             # 从根目录的order.csv文件验证订单是否存在
@@ -111,7 +109,7 @@ class DSLEngine:
         
         # 注册内置函数
         self.register_function('calc_delivery', calc_delivery)
-        self.register_function('validate_order', validate_order)
+        self.register_function('extract_order_number', extract_order_number)
 
 
     def register_function(self, name: str, func):
@@ -150,8 +148,6 @@ class DSLEngine:
                 self._process_config_section(section)
             elif section['type'] == 'VarSection':
                 self._process_var_section(section)
-            elif section['type'] == 'FunctionSection':
-                self._process_function_section(section)
 
     def _process_config_section(self, config_section):
         """处理配置区块"""
@@ -177,18 +173,6 @@ class DSLEngine:
                     self.variables[var_name] = value
                     self._debug(f"变量: {var_name} = {value}")
 
-    def _process_function_section(self, function_section):
-        """处理函数映射区块"""
-        for item in function_section.get('children', []):
-            if item['type'] == 'FunctionMapping':
-                func_name = item.get('value', '')
-                # 函数映射值在第一个子节点中
-                if item.get('children'):
-                    value_node = item['children'][0]
-                    if value_node['type'] == 'String':
-                        self.functions[func_name] = value_node.get('value', '')
-                        self._debug(f"函数映射: {func_name} -> {self.functions[func_name]}")
-
     def _evaluate_expression(self, node: Dict) -> Any:
         """评估表达式节点"""
         if not isinstance(node, dict):
@@ -212,8 +196,6 @@ class DSLEngine:
             return self._evaluate_arithmetic(node)
         elif node_type == 'Comparison':
             return self._evaluate_comparison(node)
-        elif node_type == 'Matches':
-            return self._evaluate_matches(node)
         else:
             self._debug(f"未知表达式类型: {node_type}")
             return None
@@ -261,24 +243,6 @@ class DSLEngine:
                 return False
         except Exception as e:
             self._debug(f"比较运算错误: {e}")
-            return False
-
-    def _evaluate_matches(self, node: Dict) -> bool:
-        """评估正则匹配表达式"""
-        if not node.get('children') or len(node['children']) != 2:
-            return False
-        
-        left = self._evaluate_expression(node['children'][0])
-        pattern = self._evaluate_expression(node['children'][1])
-        
-        try:
-            if isinstance(left, str) and isinstance(pattern, str):
-                pattern = pattern.encode().decode('unicode_escape')
-                self._debug(f"正则匹配: '{left}' 匹配模式 '{pattern}'")
-                return bool(re.fullmatch(pattern, left))
-            return False
-        except Exception as e:
-            self._debug(f"正则匹配错误: {e}")
             return False
 
     def _execute_statement(self, statement: Dict, user_input: str = '') -> List[str]:
@@ -395,9 +359,6 @@ class DSLEngine:
             for arg_node in func_call_node['children']:
                 # 先评估参数表达式，获取实际值
                 arg_value = self._evaluate_expression(arg_node)
-                # 确保 user_input 被正确替换
-                if arg_value == '$user_input':
-                    arg_value = user_input
                 args.append(arg_value)
         
         self._debug(f"调用函数 {func_name}，参数: {args}")
@@ -497,7 +458,8 @@ def test_engine():
     try:
         # 创建引擎
         engine = DSLEngine(script_path, debug=True)
-
+        engine.process("provide_order_number", "我的订单号是ORDER123")
+        return  # 仅测试初始化和处理，避免重复输出
         # 测试可用意图
         intents = engine.get_intents()
         print(f"可用意图: {intents}")
