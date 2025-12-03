@@ -1,4 +1,5 @@
 """
+llm_client.py -
 LLM意图识别模块
 连接大模型API进行意图分类
 """
@@ -24,9 +25,9 @@ class LLMClient:
 
         self.api_key = resolved_key
         self.client = None
+        self.latest_intent = "unknown"
 
         # Initialize OpenAI-compatible client if enabled and API key is provided
-
         if self.debug:
             masked = self._mask_key(self.api_key)
             print(f"[DEBUG] 初始化LLM客户端，使用API: {masked}")
@@ -41,28 +42,33 @@ class LLMClient:
             print(f"[ERROR] 初始化LLM客户端失败: {e}. ")
             self.client = None
 
-    def recognize_intent(self, user_input, available_intents):
+    def recognize_intent(self, user_input, available_intents, latest_responses):
         """识别用户输入的意图"""
         if self.debug:
             print(f"[DEBUG] 开始意图识别")
             print(f"[DEBUG] 用户输入: '{user_input}'")
             print(f"[DEBUG] 可用意图: {available_intents}")
+            print(f"[DEBUG] 上一个响应: {latest_responses}")
 
-        result = self._llm_recognize_intent(user_input, available_intents)
+        result = self._llm_recognize_intent(user_input, available_intents, latest_responses)
 
         if self.debug:
             print(f"[DEBUG] 意图识别完成: {result}")
         return result
 
-    def _llm_recognize_intent(self, user_input, available_intents):
+    def _llm_recognize_intent(self, user_input, available_intents, latest_responses):
         """使用豆包 LLM API进行意图识别"""
         try:
-            prompt = f"""请从以下意图列表中分类用户输入，只返回意图名称，不要返回其他内容。
+            prompt = f"""
+请从以下意图列表中分类用户输入，只返回意图名称，不要返回其他内容。
 
 可用意图：{', '.join(available_intents)}
 用户输入：{user_input}
+用户的上一个意图：{self.latest_intent}
+用户上一次得到的响应：{latest_responses}
 
-请直接返回最匹配的意图名称"""
+请直接返回最匹配的意图名称
+"""
 
             if self.debug:
                 print(f"[DEBUG] 构造的提示词: {prompt[:200]}...")  # 只显示前200字符避免过长
@@ -88,6 +94,7 @@ class LLMClient:
             if intent in available_intents:
                 if self.debug:
                     print(f"[DEBUG] 意图验证通过: '{intent}' 在可用意图列表中")
+                self.latest_intent = intent
                 return intent
             else:
                 if self.debug:
@@ -107,18 +114,3 @@ class LLMClient:
         if len(key) <= 8:
             return "*" * (len(key) - 2) + key[-2:]
         return key[:4] + "..." + key[-4:]
-
-# 使用示例
-if __name__ == "__main__":
-    print("=== LLM意图识别模块测试 ===")
-
-    # 默认使用LLM API
-    print("\n1. 测试LLM API模式:")
-    client = LLMClient(debug=True)
-
-    test_input = "你好，我想查询我的订单状态"
-    available_intents = ['greeting', 'ask_time', 'check_order', 'return_request', 'complaint']
-
-    print(f"\n[TEST] 测试输入: '{test_input}'")
-    intent = client.recognize_intent(test_input, available_intents)
-    print(f"\n[RESULT] 最终识别结果: {intent}")

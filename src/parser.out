@@ -6,106 +6,50 @@ Rule 0     S' -> script
 Rule 1     script -> sections
 Rule 2     sections -> section sections
 Rule 3     sections -> section
-Rule 4     section -> config_section
-Rule 5     section -> var_section
-Rule 6     section -> function_section
-Rule 7     section -> intent_section
-Rule 8     config_section -> CONFIG config_items
-Rule 9     config_items -> config_item config_items
-Rule 10    config_items -> config_item
-Rule 11    config_item -> IDENTIFIER ASSIGN expression
-Rule 12    var_section -> VAR var_declarations
-Rule 13    var_declarations -> var_declaration var_declarations
-Rule 14    var_declarations -> var_declaration
-Rule 15    var_declaration -> IDENTIFIER ASSIGN expression
-Rule 16    function_section -> FUNCTION function_mappings
-Rule 17    function_mappings -> function_mapping function_mappings
-Rule 18    function_mappings -> function_mapping
-Rule 19    function_mapping -> IDENTIFIER ASSIGN STRING
-Rule 20    intent_section -> INTENT STRING statements
-Rule 21    statements -> statement statements
-Rule 22    statements -> statement
-Rule 23    statement -> reply_statement
-Rule 24    statement -> set_statement
-Rule 25    statement -> if_statement
-Rule 26    statement -> call_statement
-Rule 27    statement -> log_statement
-Rule 28    reply_statement -> REPLY STRING
-Rule 29    set_statement -> SET IDENTIFIER ASSIGN expression
-Rule 30    log_statement -> LOG STRING
-Rule 31    call_statement -> CALL assignment
-Rule 32    assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN
-Rule 33    assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN
-Rule 34    if_statement -> IF expression statements END
-Rule 35    if_statement -> IF expression statements ELSE statements END
-Rule 36    if_statement -> IF expression statements ELSE if_statement
-Rule 37    expression -> comparison_expression
-Rule 38    expression -> arithmetic_expression
-Rule 39    expression -> simple_expression
-Rule 40    comparison_expression -> simple_expression EQUALS simple_expression
-Rule 41    arithmetic_expression -> expression PLUS expression
-Rule 42    arithmetic_expression -> expression MINUS expression
-Rule 43    arithmetic_expression -> expression TIMES expression
-Rule 44    arithmetic_expression -> expression DIVIDE expression
-Rule 45    simple_expression -> STRING
-Rule 46    simple_expression -> NUMBER
-Rule 47    simple_expression -> VARIABLE
-Rule 48    simple_expression -> IDENTIFIER
+Rule 4     section -> step_section
+Rule 5     step_section -> STEP STRING statements
+Rule 6     statements -> statement statements
+Rule 7     statements -> statement
+Rule 8     statement -> reply_statement
+Rule 9     statement -> log_statement
+Rule 10    statement -> wait_statement
+Rule 11    reply_statement -> REPLY expression
+Rule 12    log_statement -> LOG expression
+Rule 13    wait_statement -> WAIT string_list
+Rule 14    string_list -> string_list STRING
+Rule 15    string_list -> STRING
+Rule 16    expression -> arithmetic_expression
+Rule 17    expression -> simple_expression
+Rule 18    arithmetic_expression -> expression PLUS expression
+Rule 19    simple_expression -> STRING
+Rule 20    simple_expression -> VARIABLE
 
 Terminals, with rules where they appear
 
-ASSIGN               : 11 15 19 29 32 33
-CALL                 : 31
-CONFIG               : 8
-DIVIDE               : 44
-ELSE                 : 35 36
-END                  : 34 35
-EQUALS               : 40
-FUNCTION             : 16
-IDENTIFIER           : 11 15 19 29 32 32 33 33 48
-IF                   : 34 35 36
-INTENT               : 20
-LOG                  : 30
-LPAREN               : 32 33
-MINUS                : 42
-NUMBER               : 46
-PLUS                 : 41
-REPLY                : 28
-RPAREN               : 32 33
-SET                  : 29
-STRING               : 19 20 28 30 45
-TIMES                : 43
-VAR                  : 12
-VARIABLE             : 47
+LOG                  : 12
+PLUS                 : 18
+REPLY                : 11
+STEP                 : 5
+STRING               : 5 14 15 19
+VARIABLE             : 20
+WAIT                 : 13
 error                : 
 
 Nonterminals, with rules where they appear
 
-arithmetic_expression : 38
-assignment           : 31
-call_statement       : 26
-comparison_expression : 37
-config_item          : 9 10
-config_items         : 8 9
-config_section       : 4
-expression           : 11 15 29 33 34 35 36 41 41 42 42 43 43 44 44
-function_mapping     : 17 18
-function_mappings    : 16 17
-function_section     : 6
-if_statement         : 25 36
-intent_section       : 7
-log_statement        : 27
-reply_statement      : 23
+arithmetic_expression : 16
+expression           : 11 12 18 18
+log_statement        : 9
+reply_statement      : 8
 script               : 0
 section              : 2 3
 sections             : 1 2
-set_statement        : 24
-simple_expression    : 39 40 40
-statement            : 21 22
-statements           : 20 21 34 35 35 36
-var_declaration      : 13 14
-var_declarations     : 12 13
-var_section          : 5
+simple_expression    : 17
+statement            : 6 7
+statements           : 5 6
+step_section         : 4
+string_list          : 13 14
+wait_statement       : 10
 
 Parsing method: LALR
 
@@ -115,27 +59,15 @@ state 0
     (1) script -> . sections
     (2) sections -> . section sections
     (3) sections -> . section
-    (4) section -> . config_section
-    (5) section -> . var_section
-    (6) section -> . function_section
-    (7) section -> . intent_section
-    (8) config_section -> . CONFIG config_items
-    (12) var_section -> . VAR var_declarations
-    (16) function_section -> . FUNCTION function_mappings
-    (20) intent_section -> . INTENT STRING statements
+    (4) section -> . step_section
+    (5) step_section -> . STEP STRING statements
 
-    CONFIG          shift and go to state 8
-    VAR             shift and go to state 9
-    FUNCTION        shift and go to state 10
-    INTENT          shift and go to state 11
+    STEP            shift and go to state 5
 
     script                         shift and go to state 1
     sections                       shift and go to state 2
     section                        shift and go to state 3
-    config_section                 shift and go to state 4
-    var_section                    shift and go to state 5
-    function_section               shift and go to state 6
-    intent_section                 shift and go to state 7
+    step_section                   shift and go to state 4
 
 state 1
 
@@ -156,1477 +88,319 @@ state 3
     (3) sections -> section .
     (2) sections -> . section sections
     (3) sections -> . section
-    (4) section -> . config_section
-    (5) section -> . var_section
-    (6) section -> . function_section
-    (7) section -> . intent_section
-    (8) config_section -> . CONFIG config_items
-    (12) var_section -> . VAR var_declarations
-    (16) function_section -> . FUNCTION function_mappings
-    (20) intent_section -> . INTENT STRING statements
+    (4) section -> . step_section
+    (5) step_section -> . STEP STRING statements
 
     $end            reduce using rule 3 (sections -> section .)
-    CONFIG          shift and go to state 8
-    VAR             shift and go to state 9
-    FUNCTION        shift and go to state 10
-    INTENT          shift and go to state 11
+    STEP            shift and go to state 5
 
     section                        shift and go to state 3
-    sections                       shift and go to state 12
-    config_section                 shift and go to state 4
-    var_section                    shift and go to state 5
-    function_section               shift and go to state 6
-    intent_section                 shift and go to state 7
+    sections                       shift and go to state 6
+    step_section                   shift and go to state 4
 
 state 4
 
-    (4) section -> config_section .
+    (4) section -> step_section .
 
-    CONFIG          reduce using rule 4 (section -> config_section .)
-    VAR             reduce using rule 4 (section -> config_section .)
-    FUNCTION        reduce using rule 4 (section -> config_section .)
-    INTENT          reduce using rule 4 (section -> config_section .)
-    $end            reduce using rule 4 (section -> config_section .)
+    STEP            reduce using rule 4 (section -> step_section .)
+    $end            reduce using rule 4 (section -> step_section .)
 
 
 state 5
 
-    (5) section -> var_section .
+    (5) step_section -> STEP . STRING statements
 
-    CONFIG          reduce using rule 5 (section -> var_section .)
-    VAR             reduce using rule 5 (section -> var_section .)
-    FUNCTION        reduce using rule 5 (section -> var_section .)
-    INTENT          reduce using rule 5 (section -> var_section .)
-    $end            reduce using rule 5 (section -> var_section .)
+    STRING          shift and go to state 7
 
 
 state 6
-
-    (6) section -> function_section .
-
-    CONFIG          reduce using rule 6 (section -> function_section .)
-    VAR             reduce using rule 6 (section -> function_section .)
-    FUNCTION        reduce using rule 6 (section -> function_section .)
-    INTENT          reduce using rule 6 (section -> function_section .)
-    $end            reduce using rule 6 (section -> function_section .)
-
-
-state 7
-
-    (7) section -> intent_section .
-
-    CONFIG          reduce using rule 7 (section -> intent_section .)
-    VAR             reduce using rule 7 (section -> intent_section .)
-    FUNCTION        reduce using rule 7 (section -> intent_section .)
-    INTENT          reduce using rule 7 (section -> intent_section .)
-    $end            reduce using rule 7 (section -> intent_section .)
-
-
-state 8
-
-    (8) config_section -> CONFIG . config_items
-    (9) config_items -> . config_item config_items
-    (10) config_items -> . config_item
-    (11) config_item -> . IDENTIFIER ASSIGN expression
-
-    IDENTIFIER      shift and go to state 15
-
-    config_items                   shift and go to state 13
-    config_item                    shift and go to state 14
-
-state 9
-
-    (12) var_section -> VAR . var_declarations
-    (13) var_declarations -> . var_declaration var_declarations
-    (14) var_declarations -> . var_declaration
-    (15) var_declaration -> . IDENTIFIER ASSIGN expression
-
-    IDENTIFIER      shift and go to state 18
-
-    var_declarations               shift and go to state 16
-    var_declaration                shift and go to state 17
-
-state 10
-
-    (16) function_section -> FUNCTION . function_mappings
-    (17) function_mappings -> . function_mapping function_mappings
-    (18) function_mappings -> . function_mapping
-    (19) function_mapping -> . IDENTIFIER ASSIGN STRING
-
-    IDENTIFIER      shift and go to state 21
-
-    function_mappings              shift and go to state 19
-    function_mapping               shift and go to state 20
-
-state 11
-
-    (20) intent_section -> INTENT . STRING statements
-
-    STRING          shift and go to state 22
-
-
-state 12
 
     (2) sections -> section sections .
 
     $end            reduce using rule 2 (sections -> section sections .)
 
 
+state 7
+
+    (5) step_section -> STEP STRING . statements
+    (6) statements -> . statement statements
+    (7) statements -> . statement
+    (8) statement -> . reply_statement
+    (9) statement -> . log_statement
+    (10) statement -> . wait_statement
+    (11) reply_statement -> . REPLY expression
+    (12) log_statement -> . LOG expression
+    (13) wait_statement -> . WAIT string_list
+
+    REPLY           shift and go to state 13
+    LOG             shift and go to state 14
+    WAIT            shift and go to state 15
+
+    statements                     shift and go to state 8
+    statement                      shift and go to state 9
+    reply_statement                shift and go to state 10
+    log_statement                  shift and go to state 11
+    wait_statement                 shift and go to state 12
+
+state 8
+
+    (5) step_section -> STEP STRING statements .
+
+    STEP            reduce using rule 5 (step_section -> STEP STRING statements .)
+    $end            reduce using rule 5 (step_section -> STEP STRING statements .)
+
+
+state 9
+
+    (6) statements -> statement . statements
+    (7) statements -> statement .
+    (6) statements -> . statement statements
+    (7) statements -> . statement
+    (8) statement -> . reply_statement
+    (9) statement -> . log_statement
+    (10) statement -> . wait_statement
+    (11) reply_statement -> . REPLY expression
+    (12) log_statement -> . LOG expression
+    (13) wait_statement -> . WAIT string_list
+
+    STEP            reduce using rule 7 (statements -> statement .)
+    $end            reduce using rule 7 (statements -> statement .)
+    REPLY           shift and go to state 13
+    LOG             shift and go to state 14
+    WAIT            shift and go to state 15
+
+    statement                      shift and go to state 9
+    statements                     shift and go to state 16
+    reply_statement                shift and go to state 10
+    log_statement                  shift and go to state 11
+    wait_statement                 shift and go to state 12
+
+state 10
+
+    (8) statement -> reply_statement .
+
+    REPLY           reduce using rule 8 (statement -> reply_statement .)
+    LOG             reduce using rule 8 (statement -> reply_statement .)
+    WAIT            reduce using rule 8 (statement -> reply_statement .)
+    STEP            reduce using rule 8 (statement -> reply_statement .)
+    $end            reduce using rule 8 (statement -> reply_statement .)
+
+
+state 11
+
+    (9) statement -> log_statement .
+
+    REPLY           reduce using rule 9 (statement -> log_statement .)
+    LOG             reduce using rule 9 (statement -> log_statement .)
+    WAIT            reduce using rule 9 (statement -> log_statement .)
+    STEP            reduce using rule 9 (statement -> log_statement .)
+    $end            reduce using rule 9 (statement -> log_statement .)
+
+
+state 12
+
+    (10) statement -> wait_statement .
+
+    REPLY           reduce using rule 10 (statement -> wait_statement .)
+    LOG             reduce using rule 10 (statement -> wait_statement .)
+    WAIT            reduce using rule 10 (statement -> wait_statement .)
+    STEP            reduce using rule 10 (statement -> wait_statement .)
+    $end            reduce using rule 10 (statement -> wait_statement .)
+
+
 state 13
 
-    (8) config_section -> CONFIG config_items .
+    (11) reply_statement -> REPLY . expression
+    (16) expression -> . arithmetic_expression
+    (17) expression -> . simple_expression
+    (18) arithmetic_expression -> . expression PLUS expression
+    (19) simple_expression -> . STRING
+    (20) simple_expression -> . VARIABLE
 
-    CONFIG          reduce using rule 8 (config_section -> CONFIG config_items .)
-    VAR             reduce using rule 8 (config_section -> CONFIG config_items .)
-    FUNCTION        reduce using rule 8 (config_section -> CONFIG config_items .)
-    INTENT          reduce using rule 8 (config_section -> CONFIG config_items .)
-    $end            reduce using rule 8 (config_section -> CONFIG config_items .)
+    STRING          shift and go to state 20
+    VARIABLE        shift and go to state 21
 
+    expression                     shift and go to state 17
+    arithmetic_expression          shift and go to state 18
+    simple_expression              shift and go to state 19
 
 state 14
 
-    (9) config_items -> config_item . config_items
-    (10) config_items -> config_item .
-    (9) config_items -> . config_item config_items
-    (10) config_items -> . config_item
-    (11) config_item -> . IDENTIFIER ASSIGN expression
+    (12) log_statement -> LOG . expression
+    (16) expression -> . arithmetic_expression
+    (17) expression -> . simple_expression
+    (18) arithmetic_expression -> . expression PLUS expression
+    (19) simple_expression -> . STRING
+    (20) simple_expression -> . VARIABLE
 
-    CONFIG          reduce using rule 10 (config_items -> config_item .)
-    VAR             reduce using rule 10 (config_items -> config_item .)
-    FUNCTION        reduce using rule 10 (config_items -> config_item .)
-    INTENT          reduce using rule 10 (config_items -> config_item .)
-    $end            reduce using rule 10 (config_items -> config_item .)
-    IDENTIFIER      shift and go to state 15
+    STRING          shift and go to state 20
+    VARIABLE        shift and go to state 21
 
-    config_item                    shift and go to state 14
-    config_items                   shift and go to state 23
+    expression                     shift and go to state 22
+    arithmetic_expression          shift and go to state 18
+    simple_expression              shift and go to state 19
 
 state 15
 
-    (11) config_item -> IDENTIFIER . ASSIGN expression
+    (13) wait_statement -> WAIT . string_list
+    (14) string_list -> . string_list STRING
+    (15) string_list -> . STRING
 
-    ASSIGN          shift and go to state 24
+    STRING          shift and go to state 24
 
+    string_list                    shift and go to state 23
 
 state 16
 
-    (12) var_section -> VAR var_declarations .
+    (6) statements -> statement statements .
 
-    CONFIG          reduce using rule 12 (var_section -> VAR var_declarations .)
-    VAR             reduce using rule 12 (var_section -> VAR var_declarations .)
-    FUNCTION        reduce using rule 12 (var_section -> VAR var_declarations .)
-    INTENT          reduce using rule 12 (var_section -> VAR var_declarations .)
-    $end            reduce using rule 12 (var_section -> VAR var_declarations .)
+    STEP            reduce using rule 6 (statements -> statement statements .)
+    $end            reduce using rule 6 (statements -> statement statements .)
 
 
 state 17
 
-    (13) var_declarations -> var_declaration . var_declarations
-    (14) var_declarations -> var_declaration .
-    (13) var_declarations -> . var_declaration var_declarations
-    (14) var_declarations -> . var_declaration
-    (15) var_declaration -> . IDENTIFIER ASSIGN expression
+    (11) reply_statement -> REPLY expression .
+    (18) arithmetic_expression -> expression . PLUS expression
 
-    CONFIG          reduce using rule 14 (var_declarations -> var_declaration .)
-    VAR             reduce using rule 14 (var_declarations -> var_declaration .)
-    FUNCTION        reduce using rule 14 (var_declarations -> var_declaration .)
-    INTENT          reduce using rule 14 (var_declarations -> var_declaration .)
-    $end            reduce using rule 14 (var_declarations -> var_declaration .)
-    IDENTIFIER      shift and go to state 18
+    REPLY           reduce using rule 11 (reply_statement -> REPLY expression .)
+    LOG             reduce using rule 11 (reply_statement -> REPLY expression .)
+    WAIT            reduce using rule 11 (reply_statement -> REPLY expression .)
+    STEP            reduce using rule 11 (reply_statement -> REPLY expression .)
+    $end            reduce using rule 11 (reply_statement -> REPLY expression .)
+    PLUS            shift and go to state 25
 
-    var_declaration                shift and go to state 17
-    var_declarations               shift and go to state 25
 
 state 18
 
-    (15) var_declaration -> IDENTIFIER . ASSIGN expression
+    (16) expression -> arithmetic_expression .
 
-    ASSIGN          shift and go to state 26
+    PLUS            reduce using rule 16 (expression -> arithmetic_expression .)
+    REPLY           reduce using rule 16 (expression -> arithmetic_expression .)
+    LOG             reduce using rule 16 (expression -> arithmetic_expression .)
+    WAIT            reduce using rule 16 (expression -> arithmetic_expression .)
+    STEP            reduce using rule 16 (expression -> arithmetic_expression .)
+    $end            reduce using rule 16 (expression -> arithmetic_expression .)
 
 
 state 19
 
-    (16) function_section -> FUNCTION function_mappings .
+    (17) expression -> simple_expression .
 
-    CONFIG          reduce using rule 16 (function_section -> FUNCTION function_mappings .)
-    VAR             reduce using rule 16 (function_section -> FUNCTION function_mappings .)
-    FUNCTION        reduce using rule 16 (function_section -> FUNCTION function_mappings .)
-    INTENT          reduce using rule 16 (function_section -> FUNCTION function_mappings .)
-    $end            reduce using rule 16 (function_section -> FUNCTION function_mappings .)
+    PLUS            reduce using rule 17 (expression -> simple_expression .)
+    REPLY           reduce using rule 17 (expression -> simple_expression .)
+    LOG             reduce using rule 17 (expression -> simple_expression .)
+    WAIT            reduce using rule 17 (expression -> simple_expression .)
+    STEP            reduce using rule 17 (expression -> simple_expression .)
+    $end            reduce using rule 17 (expression -> simple_expression .)
 
 
 state 20
 
-    (17) function_mappings -> function_mapping . function_mappings
-    (18) function_mappings -> function_mapping .
-    (17) function_mappings -> . function_mapping function_mappings
-    (18) function_mappings -> . function_mapping
-    (19) function_mapping -> . IDENTIFIER ASSIGN STRING
+    (19) simple_expression -> STRING .
 
-    CONFIG          reduce using rule 18 (function_mappings -> function_mapping .)
-    VAR             reduce using rule 18 (function_mappings -> function_mapping .)
-    FUNCTION        reduce using rule 18 (function_mappings -> function_mapping .)
-    INTENT          reduce using rule 18 (function_mappings -> function_mapping .)
-    $end            reduce using rule 18 (function_mappings -> function_mapping .)
-    IDENTIFIER      shift and go to state 21
+    PLUS            reduce using rule 19 (simple_expression -> STRING .)
+    REPLY           reduce using rule 19 (simple_expression -> STRING .)
+    LOG             reduce using rule 19 (simple_expression -> STRING .)
+    WAIT            reduce using rule 19 (simple_expression -> STRING .)
+    STEP            reduce using rule 19 (simple_expression -> STRING .)
+    $end            reduce using rule 19 (simple_expression -> STRING .)
 
-    function_mapping               shift and go to state 20
-    function_mappings              shift and go to state 27
 
 state 21
 
-    (19) function_mapping -> IDENTIFIER . ASSIGN STRING
+    (20) simple_expression -> VARIABLE .
 
-    ASSIGN          shift and go to state 28
+    PLUS            reduce using rule 20 (simple_expression -> VARIABLE .)
+    REPLY           reduce using rule 20 (simple_expression -> VARIABLE .)
+    LOG             reduce using rule 20 (simple_expression -> VARIABLE .)
+    WAIT            reduce using rule 20 (simple_expression -> VARIABLE .)
+    STEP            reduce using rule 20 (simple_expression -> VARIABLE .)
+    $end            reduce using rule 20 (simple_expression -> VARIABLE .)
 
 
 state 22
 
-    (20) intent_section -> INTENT STRING . statements
-    (21) statements -> . statement statements
-    (22) statements -> . statement
-    (23) statement -> . reply_statement
-    (24) statement -> . set_statement
-    (25) statement -> . if_statement
-    (26) statement -> . call_statement
-    (27) statement -> . log_statement
-    (28) reply_statement -> . REPLY STRING
-    (29) set_statement -> . SET IDENTIFIER ASSIGN expression
-    (34) if_statement -> . IF expression statements END
-    (35) if_statement -> . IF expression statements ELSE statements END
-    (36) if_statement -> . IF expression statements ELSE if_statement
-    (31) call_statement -> . CALL assignment
-    (30) log_statement -> . LOG STRING
+    (12) log_statement -> LOG expression .
+    (18) arithmetic_expression -> expression . PLUS expression
 
-    REPLY           shift and go to state 36
-    SET             shift and go to state 37
-    IF              shift and go to state 38
-    CALL            shift and go to state 39
-    LOG             shift and go to state 40
+    REPLY           reduce using rule 12 (log_statement -> LOG expression .)
+    LOG             reduce using rule 12 (log_statement -> LOG expression .)
+    WAIT            reduce using rule 12 (log_statement -> LOG expression .)
+    STEP            reduce using rule 12 (log_statement -> LOG expression .)
+    $end            reduce using rule 12 (log_statement -> LOG expression .)
+    PLUS            shift and go to state 25
 
-    statements                     shift and go to state 29
-    statement                      shift and go to state 30
-    reply_statement                shift and go to state 31
-    set_statement                  shift and go to state 32
-    if_statement                   shift and go to state 33
-    call_statement                 shift and go to state 34
-    log_statement                  shift and go to state 35
 
 state 23
 
-    (9) config_items -> config_item config_items .
+    (13) wait_statement -> WAIT string_list .
+    (14) string_list -> string_list . STRING
 
-    CONFIG          reduce using rule 9 (config_items -> config_item config_items .)
-    VAR             reduce using rule 9 (config_items -> config_item config_items .)
-    FUNCTION        reduce using rule 9 (config_items -> config_item config_items .)
-    INTENT          reduce using rule 9 (config_items -> config_item config_items .)
-    $end            reduce using rule 9 (config_items -> config_item config_items .)
+    REPLY           reduce using rule 13 (wait_statement -> WAIT string_list .)
+    LOG             reduce using rule 13 (wait_statement -> WAIT string_list .)
+    WAIT            reduce using rule 13 (wait_statement -> WAIT string_list .)
+    STEP            reduce using rule 13 (wait_statement -> WAIT string_list .)
+    $end            reduce using rule 13 (wait_statement -> WAIT string_list .)
+    STRING          shift and go to state 26
 
 
 state 24
 
-    (11) config_item -> IDENTIFIER ASSIGN . expression
-    (37) expression -> . comparison_expression
-    (38) expression -> . arithmetic_expression
-    (39) expression -> . simple_expression
-    (40) comparison_expression -> . simple_expression EQUALS simple_expression
-    (41) arithmetic_expression -> . expression PLUS expression
-    (42) arithmetic_expression -> . expression MINUS expression
-    (43) arithmetic_expression -> . expression TIMES expression
-    (44) arithmetic_expression -> . expression DIVIDE expression
-    (45) simple_expression -> . STRING
-    (46) simple_expression -> . NUMBER
-    (47) simple_expression -> . VARIABLE
-    (48) simple_expression -> . IDENTIFIER
+    (15) string_list -> STRING .
 
-    STRING          shift and go to state 46
-    NUMBER          shift and go to state 47
-    VARIABLE        shift and go to state 48
-    IDENTIFIER      shift and go to state 41
+    STRING          reduce using rule 15 (string_list -> STRING .)
+    REPLY           reduce using rule 15 (string_list -> STRING .)
+    LOG             reduce using rule 15 (string_list -> STRING .)
+    WAIT            reduce using rule 15 (string_list -> STRING .)
+    STEP            reduce using rule 15 (string_list -> STRING .)
+    $end            reduce using rule 15 (string_list -> STRING .)
 
-    expression                     shift and go to state 42
-    comparison_expression          shift and go to state 43
-    arithmetic_expression          shift and go to state 44
-    simple_expression              shift and go to state 45
 
 state 25
 
-    (13) var_declarations -> var_declaration var_declarations .
+    (18) arithmetic_expression -> expression PLUS . expression
+    (16) expression -> . arithmetic_expression
+    (17) expression -> . simple_expression
+    (18) arithmetic_expression -> . expression PLUS expression
+    (19) simple_expression -> . STRING
+    (20) simple_expression -> . VARIABLE
 
-    CONFIG          reduce using rule 13 (var_declarations -> var_declaration var_declarations .)
-    VAR             reduce using rule 13 (var_declarations -> var_declaration var_declarations .)
-    FUNCTION        reduce using rule 13 (var_declarations -> var_declaration var_declarations .)
-    INTENT          reduce using rule 13 (var_declarations -> var_declaration var_declarations .)
-    $end            reduce using rule 13 (var_declarations -> var_declaration var_declarations .)
+    STRING          shift and go to state 20
+    VARIABLE        shift and go to state 21
 
+    expression                     shift and go to state 27
+    arithmetic_expression          shift and go to state 18
+    simple_expression              shift and go to state 19
 
 state 26
 
-    (15) var_declaration -> IDENTIFIER ASSIGN . expression
-    (37) expression -> . comparison_expression
-    (38) expression -> . arithmetic_expression
-    (39) expression -> . simple_expression
-    (40) comparison_expression -> . simple_expression EQUALS simple_expression
-    (41) arithmetic_expression -> . expression PLUS expression
-    (42) arithmetic_expression -> . expression MINUS expression
-    (43) arithmetic_expression -> . expression TIMES expression
-    (44) arithmetic_expression -> . expression DIVIDE expression
-    (45) simple_expression -> . STRING
-    (46) simple_expression -> . NUMBER
-    (47) simple_expression -> . VARIABLE
-    (48) simple_expression -> . IDENTIFIER
+    (14) string_list -> string_list STRING .
 
-    STRING          shift and go to state 46
-    NUMBER          shift and go to state 47
-    VARIABLE        shift and go to state 48
-    IDENTIFIER      shift and go to state 41
+    STRING          reduce using rule 14 (string_list -> string_list STRING .)
+    REPLY           reduce using rule 14 (string_list -> string_list STRING .)
+    LOG             reduce using rule 14 (string_list -> string_list STRING .)
+    WAIT            reduce using rule 14 (string_list -> string_list STRING .)
+    STEP            reduce using rule 14 (string_list -> string_list STRING .)
+    $end            reduce using rule 14 (string_list -> string_list STRING .)
 
-    expression                     shift and go to state 49
-    comparison_expression          shift and go to state 43
-    arithmetic_expression          shift and go to state 44
-    simple_expression              shift and go to state 45
 
 state 27
 
-    (17) function_mappings -> function_mapping function_mappings .
-
-    CONFIG          reduce using rule 17 (function_mappings -> function_mapping function_mappings .)
-    VAR             reduce using rule 17 (function_mappings -> function_mapping function_mappings .)
-    FUNCTION        reduce using rule 17 (function_mappings -> function_mapping function_mappings .)
-    INTENT          reduce using rule 17 (function_mappings -> function_mapping function_mappings .)
-    $end            reduce using rule 17 (function_mappings -> function_mapping function_mappings .)
-
-
-state 28
-
-    (19) function_mapping -> IDENTIFIER ASSIGN . STRING
-
-    STRING          shift and go to state 50
-
-
-state 29
-
-    (20) intent_section -> INTENT STRING statements .
-
-    CONFIG          reduce using rule 20 (intent_section -> INTENT STRING statements .)
-    VAR             reduce using rule 20 (intent_section -> INTENT STRING statements .)
-    FUNCTION        reduce using rule 20 (intent_section -> INTENT STRING statements .)
-    INTENT          reduce using rule 20 (intent_section -> INTENT STRING statements .)
-    $end            reduce using rule 20 (intent_section -> INTENT STRING statements .)
-
-
-state 30
-
-    (21) statements -> statement . statements
-    (22) statements -> statement .
-    (21) statements -> . statement statements
-    (22) statements -> . statement
-    (23) statement -> . reply_statement
-    (24) statement -> . set_statement
-    (25) statement -> . if_statement
-    (26) statement -> . call_statement
-    (27) statement -> . log_statement
-    (28) reply_statement -> . REPLY STRING
-    (29) set_statement -> . SET IDENTIFIER ASSIGN expression
-    (34) if_statement -> . IF expression statements END
-    (35) if_statement -> . IF expression statements ELSE statements END
-    (36) if_statement -> . IF expression statements ELSE if_statement
-    (31) call_statement -> . CALL assignment
-    (30) log_statement -> . LOG STRING
-
-    CONFIG          reduce using rule 22 (statements -> statement .)
-    VAR             reduce using rule 22 (statements -> statement .)
-    FUNCTION        reduce using rule 22 (statements -> statement .)
-    INTENT          reduce using rule 22 (statements -> statement .)
-    $end            reduce using rule 22 (statements -> statement .)
-    END             reduce using rule 22 (statements -> statement .)
-    ELSE            reduce using rule 22 (statements -> statement .)
-    REPLY           shift and go to state 36
-    SET             shift and go to state 37
-    IF              shift and go to state 38
-    CALL            shift and go to state 39
-    LOG             shift and go to state 40
-
-    statement                      shift and go to state 30
-    statements                     shift and go to state 51
-    reply_statement                shift and go to state 31
-    set_statement                  shift and go to state 32
-    if_statement                   shift and go to state 33
-    call_statement                 shift and go to state 34
-    log_statement                  shift and go to state 35
-
-state 31
-
-    (23) statement -> reply_statement .
-
-    REPLY           reduce using rule 23 (statement -> reply_statement .)
-    SET             reduce using rule 23 (statement -> reply_statement .)
-    IF              reduce using rule 23 (statement -> reply_statement .)
-    CALL            reduce using rule 23 (statement -> reply_statement .)
-    LOG             reduce using rule 23 (statement -> reply_statement .)
-    CONFIG          reduce using rule 23 (statement -> reply_statement .)
-    VAR             reduce using rule 23 (statement -> reply_statement .)
-    FUNCTION        reduce using rule 23 (statement -> reply_statement .)
-    INTENT          reduce using rule 23 (statement -> reply_statement .)
-    $end            reduce using rule 23 (statement -> reply_statement .)
-    END             reduce using rule 23 (statement -> reply_statement .)
-    ELSE            reduce using rule 23 (statement -> reply_statement .)
-
-
-state 32
-
-    (24) statement -> set_statement .
-
-    REPLY           reduce using rule 24 (statement -> set_statement .)
-    SET             reduce using rule 24 (statement -> set_statement .)
-    IF              reduce using rule 24 (statement -> set_statement .)
-    CALL            reduce using rule 24 (statement -> set_statement .)
-    LOG             reduce using rule 24 (statement -> set_statement .)
-    CONFIG          reduce using rule 24 (statement -> set_statement .)
-    VAR             reduce using rule 24 (statement -> set_statement .)
-    FUNCTION        reduce using rule 24 (statement -> set_statement .)
-    INTENT          reduce using rule 24 (statement -> set_statement .)
-    $end            reduce using rule 24 (statement -> set_statement .)
-    END             reduce using rule 24 (statement -> set_statement .)
-    ELSE            reduce using rule 24 (statement -> set_statement .)
-
-
-state 33
-
-    (25) statement -> if_statement .
-
-    REPLY           reduce using rule 25 (statement -> if_statement .)
-    SET             reduce using rule 25 (statement -> if_statement .)
-    IF              reduce using rule 25 (statement -> if_statement .)
-    CALL            reduce using rule 25 (statement -> if_statement .)
-    LOG             reduce using rule 25 (statement -> if_statement .)
-    CONFIG          reduce using rule 25 (statement -> if_statement .)
-    VAR             reduce using rule 25 (statement -> if_statement .)
-    FUNCTION        reduce using rule 25 (statement -> if_statement .)
-    INTENT          reduce using rule 25 (statement -> if_statement .)
-    $end            reduce using rule 25 (statement -> if_statement .)
-    END             reduce using rule 25 (statement -> if_statement .)
-    ELSE            reduce using rule 25 (statement -> if_statement .)
-
-
-state 34
-
-    (26) statement -> call_statement .
-
-    REPLY           reduce using rule 26 (statement -> call_statement .)
-    SET             reduce using rule 26 (statement -> call_statement .)
-    IF              reduce using rule 26 (statement -> call_statement .)
-    CALL            reduce using rule 26 (statement -> call_statement .)
-    LOG             reduce using rule 26 (statement -> call_statement .)
-    CONFIG          reduce using rule 26 (statement -> call_statement .)
-    VAR             reduce using rule 26 (statement -> call_statement .)
-    FUNCTION        reduce using rule 26 (statement -> call_statement .)
-    INTENT          reduce using rule 26 (statement -> call_statement .)
-    $end            reduce using rule 26 (statement -> call_statement .)
-    END             reduce using rule 26 (statement -> call_statement .)
-    ELSE            reduce using rule 26 (statement -> call_statement .)
-
-
-state 35
-
-    (27) statement -> log_statement .
-
-    REPLY           reduce using rule 27 (statement -> log_statement .)
-    SET             reduce using rule 27 (statement -> log_statement .)
-    IF              reduce using rule 27 (statement -> log_statement .)
-    CALL            reduce using rule 27 (statement -> log_statement .)
-    LOG             reduce using rule 27 (statement -> log_statement .)
-    CONFIG          reduce using rule 27 (statement -> log_statement .)
-    VAR             reduce using rule 27 (statement -> log_statement .)
-    FUNCTION        reduce using rule 27 (statement -> log_statement .)
-    INTENT          reduce using rule 27 (statement -> log_statement .)
-    $end            reduce using rule 27 (statement -> log_statement .)
-    END             reduce using rule 27 (statement -> log_statement .)
-    ELSE            reduce using rule 27 (statement -> log_statement .)
-
-
-state 36
-
-    (28) reply_statement -> REPLY . STRING
-
-    STRING          shift and go to state 52
-
-
-state 37
-
-    (29) set_statement -> SET . IDENTIFIER ASSIGN expression
-
-    IDENTIFIER      shift and go to state 53
-
-
-state 38
-
-    (34) if_statement -> IF . expression statements END
-    (35) if_statement -> IF . expression statements ELSE statements END
-    (36) if_statement -> IF . expression statements ELSE if_statement
-    (37) expression -> . comparison_expression
-    (38) expression -> . arithmetic_expression
-    (39) expression -> . simple_expression
-    (40) comparison_expression -> . simple_expression EQUALS simple_expression
-    (41) arithmetic_expression -> . expression PLUS expression
-    (42) arithmetic_expression -> . expression MINUS expression
-    (43) arithmetic_expression -> . expression TIMES expression
-    (44) arithmetic_expression -> . expression DIVIDE expression
-    (45) simple_expression -> . STRING
-    (46) simple_expression -> . NUMBER
-    (47) simple_expression -> . VARIABLE
-    (48) simple_expression -> . IDENTIFIER
-
-    STRING          shift and go to state 46
-    NUMBER          shift and go to state 47
-    VARIABLE        shift and go to state 48
-    IDENTIFIER      shift and go to state 41
-
-    expression                     shift and go to state 54
-    comparison_expression          shift and go to state 43
-    arithmetic_expression          shift and go to state 44
-    simple_expression              shift and go to state 45
-
-state 39
-
-    (31) call_statement -> CALL . assignment
-    (32) assignment -> . IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN
-    (33) assignment -> . IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN
-
-    IDENTIFIER      shift and go to state 56
-
-    assignment                     shift and go to state 55
-
-state 40
-
-    (30) log_statement -> LOG . STRING
-
-    STRING          shift and go to state 57
-
-
-state 41
-
-    (48) simple_expression -> IDENTIFIER .
-
-    EQUALS          reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    PLUS            reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    MINUS           reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    TIMES           reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    DIVIDE          reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    IDENTIFIER      reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    CONFIG          reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    VAR             reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    FUNCTION        reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    INTENT          reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    $end            reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    REPLY           reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    SET             reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    IF              reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    CALL            reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    LOG             reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    END             reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    ELSE            reduce using rule 48 (simple_expression -> IDENTIFIER .)
-    RPAREN          reduce using rule 48 (simple_expression -> IDENTIFIER .)
-
-
-state 42
-
-    (11) config_item -> IDENTIFIER ASSIGN expression .
-    (41) arithmetic_expression -> expression . PLUS expression
-    (42) arithmetic_expression -> expression . MINUS expression
-    (43) arithmetic_expression -> expression . TIMES expression
-    (44) arithmetic_expression -> expression . DIVIDE expression
-
-    IDENTIFIER      reduce using rule 11 (config_item -> IDENTIFIER ASSIGN expression .)
-    CONFIG          reduce using rule 11 (config_item -> IDENTIFIER ASSIGN expression .)
-    VAR             reduce using rule 11 (config_item -> IDENTIFIER ASSIGN expression .)
-    FUNCTION        reduce using rule 11 (config_item -> IDENTIFIER ASSIGN expression .)
-    INTENT          reduce using rule 11 (config_item -> IDENTIFIER ASSIGN expression .)
-    $end            reduce using rule 11 (config_item -> IDENTIFIER ASSIGN expression .)
-    PLUS            shift and go to state 58
-    MINUS           shift and go to state 59
-    TIMES           shift and go to state 60
-    DIVIDE          shift and go to state 61
-
-
-state 43
-
-    (37) expression -> comparison_expression .
-
-    PLUS            reduce using rule 37 (expression -> comparison_expression .)
-    MINUS           reduce using rule 37 (expression -> comparison_expression .)
-    TIMES           reduce using rule 37 (expression -> comparison_expression .)
-    DIVIDE          reduce using rule 37 (expression -> comparison_expression .)
-    IDENTIFIER      reduce using rule 37 (expression -> comparison_expression .)
-    CONFIG          reduce using rule 37 (expression -> comparison_expression .)
-    VAR             reduce using rule 37 (expression -> comparison_expression .)
-    FUNCTION        reduce using rule 37 (expression -> comparison_expression .)
-    INTENT          reduce using rule 37 (expression -> comparison_expression .)
-    $end            reduce using rule 37 (expression -> comparison_expression .)
-    REPLY           reduce using rule 37 (expression -> comparison_expression .)
-    SET             reduce using rule 37 (expression -> comparison_expression .)
-    IF              reduce using rule 37 (expression -> comparison_expression .)
-    CALL            reduce using rule 37 (expression -> comparison_expression .)
-    LOG             reduce using rule 37 (expression -> comparison_expression .)
-    END             reduce using rule 37 (expression -> comparison_expression .)
-    ELSE            reduce using rule 37 (expression -> comparison_expression .)
-    RPAREN          reduce using rule 37 (expression -> comparison_expression .)
-
-
-state 44
-
-    (38) expression -> arithmetic_expression .
-
-    PLUS            reduce using rule 38 (expression -> arithmetic_expression .)
-    MINUS           reduce using rule 38 (expression -> arithmetic_expression .)
-    TIMES           reduce using rule 38 (expression -> arithmetic_expression .)
-    DIVIDE          reduce using rule 38 (expression -> arithmetic_expression .)
-    IDENTIFIER      reduce using rule 38 (expression -> arithmetic_expression .)
-    CONFIG          reduce using rule 38 (expression -> arithmetic_expression .)
-    VAR             reduce using rule 38 (expression -> arithmetic_expression .)
-    FUNCTION        reduce using rule 38 (expression -> arithmetic_expression .)
-    INTENT          reduce using rule 38 (expression -> arithmetic_expression .)
-    $end            reduce using rule 38 (expression -> arithmetic_expression .)
-    REPLY           reduce using rule 38 (expression -> arithmetic_expression .)
-    SET             reduce using rule 38 (expression -> arithmetic_expression .)
-    IF              reduce using rule 38 (expression -> arithmetic_expression .)
-    CALL            reduce using rule 38 (expression -> arithmetic_expression .)
-    LOG             reduce using rule 38 (expression -> arithmetic_expression .)
-    END             reduce using rule 38 (expression -> arithmetic_expression .)
-    ELSE            reduce using rule 38 (expression -> arithmetic_expression .)
-    RPAREN          reduce using rule 38 (expression -> arithmetic_expression .)
-
-
-state 45
-
-    (39) expression -> simple_expression .
-    (40) comparison_expression -> simple_expression . EQUALS simple_expression
-
-    PLUS            reduce using rule 39 (expression -> simple_expression .)
-    MINUS           reduce using rule 39 (expression -> simple_expression .)
-    TIMES           reduce using rule 39 (expression -> simple_expression .)
-    DIVIDE          reduce using rule 39 (expression -> simple_expression .)
-    IDENTIFIER      reduce using rule 39 (expression -> simple_expression .)
-    CONFIG          reduce using rule 39 (expression -> simple_expression .)
-    VAR             reduce using rule 39 (expression -> simple_expression .)
-    FUNCTION        reduce using rule 39 (expression -> simple_expression .)
-    INTENT          reduce using rule 39 (expression -> simple_expression .)
-    $end            reduce using rule 39 (expression -> simple_expression .)
-    REPLY           reduce using rule 39 (expression -> simple_expression .)
-    SET             reduce using rule 39 (expression -> simple_expression .)
-    IF              reduce using rule 39 (expression -> simple_expression .)
-    CALL            reduce using rule 39 (expression -> simple_expression .)
-    LOG             reduce using rule 39 (expression -> simple_expression .)
-    END             reduce using rule 39 (expression -> simple_expression .)
-    ELSE            reduce using rule 39 (expression -> simple_expression .)
-    RPAREN          reduce using rule 39 (expression -> simple_expression .)
-    EQUALS          shift and go to state 62
-
-
-state 46
-
-    (45) simple_expression -> STRING .
-
-    EQUALS          reduce using rule 45 (simple_expression -> STRING .)
-    PLUS            reduce using rule 45 (simple_expression -> STRING .)
-    MINUS           reduce using rule 45 (simple_expression -> STRING .)
-    TIMES           reduce using rule 45 (simple_expression -> STRING .)
-    DIVIDE          reduce using rule 45 (simple_expression -> STRING .)
-    IDENTIFIER      reduce using rule 45 (simple_expression -> STRING .)
-    CONFIG          reduce using rule 45 (simple_expression -> STRING .)
-    VAR             reduce using rule 45 (simple_expression -> STRING .)
-    FUNCTION        reduce using rule 45 (simple_expression -> STRING .)
-    INTENT          reduce using rule 45 (simple_expression -> STRING .)
-    $end            reduce using rule 45 (simple_expression -> STRING .)
-    REPLY           reduce using rule 45 (simple_expression -> STRING .)
-    SET             reduce using rule 45 (simple_expression -> STRING .)
-    IF              reduce using rule 45 (simple_expression -> STRING .)
-    CALL            reduce using rule 45 (simple_expression -> STRING .)
-    LOG             reduce using rule 45 (simple_expression -> STRING .)
-    END             reduce using rule 45 (simple_expression -> STRING .)
-    ELSE            reduce using rule 45 (simple_expression -> STRING .)
-    RPAREN          reduce using rule 45 (simple_expression -> STRING .)
-
-
-state 47
-
-    (46) simple_expression -> NUMBER .
-
-    EQUALS          reduce using rule 46 (simple_expression -> NUMBER .)
-    PLUS            reduce using rule 46 (simple_expression -> NUMBER .)
-    MINUS           reduce using rule 46 (simple_expression -> NUMBER .)
-    TIMES           reduce using rule 46 (simple_expression -> NUMBER .)
-    DIVIDE          reduce using rule 46 (simple_expression -> NUMBER .)
-    IDENTIFIER      reduce using rule 46 (simple_expression -> NUMBER .)
-    CONFIG          reduce using rule 46 (simple_expression -> NUMBER .)
-    VAR             reduce using rule 46 (simple_expression -> NUMBER .)
-    FUNCTION        reduce using rule 46 (simple_expression -> NUMBER .)
-    INTENT          reduce using rule 46 (simple_expression -> NUMBER .)
-    $end            reduce using rule 46 (simple_expression -> NUMBER .)
-    REPLY           reduce using rule 46 (simple_expression -> NUMBER .)
-    SET             reduce using rule 46 (simple_expression -> NUMBER .)
-    IF              reduce using rule 46 (simple_expression -> NUMBER .)
-    CALL            reduce using rule 46 (simple_expression -> NUMBER .)
-    LOG             reduce using rule 46 (simple_expression -> NUMBER .)
-    END             reduce using rule 46 (simple_expression -> NUMBER .)
-    ELSE            reduce using rule 46 (simple_expression -> NUMBER .)
-    RPAREN          reduce using rule 46 (simple_expression -> NUMBER .)
-
-
-state 48
-
-    (47) simple_expression -> VARIABLE .
-
-    EQUALS          reduce using rule 47 (simple_expression -> VARIABLE .)
-    PLUS            reduce using rule 47 (simple_expression -> VARIABLE .)
-    MINUS           reduce using rule 47 (simple_expression -> VARIABLE .)
-    TIMES           reduce using rule 47 (simple_expression -> VARIABLE .)
-    DIVIDE          reduce using rule 47 (simple_expression -> VARIABLE .)
-    IDENTIFIER      reduce using rule 47 (simple_expression -> VARIABLE .)
-    CONFIG          reduce using rule 47 (simple_expression -> VARIABLE .)
-    VAR             reduce using rule 47 (simple_expression -> VARIABLE .)
-    FUNCTION        reduce using rule 47 (simple_expression -> VARIABLE .)
-    INTENT          reduce using rule 47 (simple_expression -> VARIABLE .)
-    $end            reduce using rule 47 (simple_expression -> VARIABLE .)
-    REPLY           reduce using rule 47 (simple_expression -> VARIABLE .)
-    SET             reduce using rule 47 (simple_expression -> VARIABLE .)
-    IF              reduce using rule 47 (simple_expression -> VARIABLE .)
-    CALL            reduce using rule 47 (simple_expression -> VARIABLE .)
-    LOG             reduce using rule 47 (simple_expression -> VARIABLE .)
-    END             reduce using rule 47 (simple_expression -> VARIABLE .)
-    ELSE            reduce using rule 47 (simple_expression -> VARIABLE .)
-    RPAREN          reduce using rule 47 (simple_expression -> VARIABLE .)
-
-
-state 49
-
-    (15) var_declaration -> IDENTIFIER ASSIGN expression .
-    (41) arithmetic_expression -> expression . PLUS expression
-    (42) arithmetic_expression -> expression . MINUS expression
-    (43) arithmetic_expression -> expression . TIMES expression
-    (44) arithmetic_expression -> expression . DIVIDE expression
-
-    IDENTIFIER      reduce using rule 15 (var_declaration -> IDENTIFIER ASSIGN expression .)
-    CONFIG          reduce using rule 15 (var_declaration -> IDENTIFIER ASSIGN expression .)
-    VAR             reduce using rule 15 (var_declaration -> IDENTIFIER ASSIGN expression .)
-    FUNCTION        reduce using rule 15 (var_declaration -> IDENTIFIER ASSIGN expression .)
-    INTENT          reduce using rule 15 (var_declaration -> IDENTIFIER ASSIGN expression .)
-    $end            reduce using rule 15 (var_declaration -> IDENTIFIER ASSIGN expression .)
-    PLUS            shift and go to state 58
-    MINUS           shift and go to state 59
-    TIMES           shift and go to state 60
-    DIVIDE          shift and go to state 61
-
-
-state 50
-
-    (19) function_mapping -> IDENTIFIER ASSIGN STRING .
-
-    IDENTIFIER      reduce using rule 19 (function_mapping -> IDENTIFIER ASSIGN STRING .)
-    CONFIG          reduce using rule 19 (function_mapping -> IDENTIFIER ASSIGN STRING .)
-    VAR             reduce using rule 19 (function_mapping -> IDENTIFIER ASSIGN STRING .)
-    FUNCTION        reduce using rule 19 (function_mapping -> IDENTIFIER ASSIGN STRING .)
-    INTENT          reduce using rule 19 (function_mapping -> IDENTIFIER ASSIGN STRING .)
-    $end            reduce using rule 19 (function_mapping -> IDENTIFIER ASSIGN STRING .)
-
-
-state 51
-
-    (21) statements -> statement statements .
-
-    CONFIG          reduce using rule 21 (statements -> statement statements .)
-    VAR             reduce using rule 21 (statements -> statement statements .)
-    FUNCTION        reduce using rule 21 (statements -> statement statements .)
-    INTENT          reduce using rule 21 (statements -> statement statements .)
-    $end            reduce using rule 21 (statements -> statement statements .)
-    END             reduce using rule 21 (statements -> statement statements .)
-    ELSE            reduce using rule 21 (statements -> statement statements .)
-
-
-state 52
-
-    (28) reply_statement -> REPLY STRING .
-
-    REPLY           reduce using rule 28 (reply_statement -> REPLY STRING .)
-    SET             reduce using rule 28 (reply_statement -> REPLY STRING .)
-    IF              reduce using rule 28 (reply_statement -> REPLY STRING .)
-    CALL            reduce using rule 28 (reply_statement -> REPLY STRING .)
-    LOG             reduce using rule 28 (reply_statement -> REPLY STRING .)
-    CONFIG          reduce using rule 28 (reply_statement -> REPLY STRING .)
-    VAR             reduce using rule 28 (reply_statement -> REPLY STRING .)
-    FUNCTION        reduce using rule 28 (reply_statement -> REPLY STRING .)
-    INTENT          reduce using rule 28 (reply_statement -> REPLY STRING .)
-    $end            reduce using rule 28 (reply_statement -> REPLY STRING .)
-    END             reduce using rule 28 (reply_statement -> REPLY STRING .)
-    ELSE            reduce using rule 28 (reply_statement -> REPLY STRING .)
-
-
-state 53
-
-    (29) set_statement -> SET IDENTIFIER . ASSIGN expression
-
-    ASSIGN          shift and go to state 63
-
-
-state 54
-
-    (34) if_statement -> IF expression . statements END
-    (35) if_statement -> IF expression . statements ELSE statements END
-    (36) if_statement -> IF expression . statements ELSE if_statement
-    (41) arithmetic_expression -> expression . PLUS expression
-    (42) arithmetic_expression -> expression . MINUS expression
-    (43) arithmetic_expression -> expression . TIMES expression
-    (44) arithmetic_expression -> expression . DIVIDE expression
-    (21) statements -> . statement statements
-    (22) statements -> . statement
-    (23) statement -> . reply_statement
-    (24) statement -> . set_statement
-    (25) statement -> . if_statement
-    (26) statement -> . call_statement
-    (27) statement -> . log_statement
-    (28) reply_statement -> . REPLY STRING
-    (29) set_statement -> . SET IDENTIFIER ASSIGN expression
-    (34) if_statement -> . IF expression statements END
-    (35) if_statement -> . IF expression statements ELSE statements END
-    (36) if_statement -> . IF expression statements ELSE if_statement
-    (31) call_statement -> . CALL assignment
-    (30) log_statement -> . LOG STRING
-
-    PLUS            shift and go to state 58
-    MINUS           shift and go to state 59
-    TIMES           shift and go to state 60
-    DIVIDE          shift and go to state 61
-    REPLY           shift and go to state 36
-    SET             shift and go to state 37
-    IF              shift and go to state 38
-    CALL            shift and go to state 39
-    LOG             shift and go to state 40
-
-    statements                     shift and go to state 64
-    if_statement                   shift and go to state 33
-    statement                      shift and go to state 30
-    reply_statement                shift and go to state 31
-    set_statement                  shift and go to state 32
-    call_statement                 shift and go to state 34
-    log_statement                  shift and go to state 35
-
-state 55
-
-    (31) call_statement -> CALL assignment .
-
-    REPLY           reduce using rule 31 (call_statement -> CALL assignment .)
-    SET             reduce using rule 31 (call_statement -> CALL assignment .)
-    IF              reduce using rule 31 (call_statement -> CALL assignment .)
-    CALL            reduce using rule 31 (call_statement -> CALL assignment .)
-    LOG             reduce using rule 31 (call_statement -> CALL assignment .)
-    CONFIG          reduce using rule 31 (call_statement -> CALL assignment .)
-    VAR             reduce using rule 31 (call_statement -> CALL assignment .)
-    FUNCTION        reduce using rule 31 (call_statement -> CALL assignment .)
-    INTENT          reduce using rule 31 (call_statement -> CALL assignment .)
-    $end            reduce using rule 31 (call_statement -> CALL assignment .)
-    END             reduce using rule 31 (call_statement -> CALL assignment .)
-    ELSE            reduce using rule 31 (call_statement -> CALL assignment .)
-
-
-state 56
-
-    (32) assignment -> IDENTIFIER . ASSIGN IDENTIFIER LPAREN RPAREN
-    (33) assignment -> IDENTIFIER . ASSIGN IDENTIFIER LPAREN expression RPAREN
-
-    ASSIGN          shift and go to state 65
-
-
-state 57
-
-    (30) log_statement -> LOG STRING .
-
-    REPLY           reduce using rule 30 (log_statement -> LOG STRING .)
-    SET             reduce using rule 30 (log_statement -> LOG STRING .)
-    IF              reduce using rule 30 (log_statement -> LOG STRING .)
-    CALL            reduce using rule 30 (log_statement -> LOG STRING .)
-    LOG             reduce using rule 30 (log_statement -> LOG STRING .)
-    CONFIG          reduce using rule 30 (log_statement -> LOG STRING .)
-    VAR             reduce using rule 30 (log_statement -> LOG STRING .)
-    FUNCTION        reduce using rule 30 (log_statement -> LOG STRING .)
-    INTENT          reduce using rule 30 (log_statement -> LOG STRING .)
-    $end            reduce using rule 30 (log_statement -> LOG STRING .)
-    END             reduce using rule 30 (log_statement -> LOG STRING .)
-    ELSE            reduce using rule 30 (log_statement -> LOG STRING .)
-
-
-state 58
-
-    (41) arithmetic_expression -> expression PLUS . expression
-    (37) expression -> . comparison_expression
-    (38) expression -> . arithmetic_expression
-    (39) expression -> . simple_expression
-    (40) comparison_expression -> . simple_expression EQUALS simple_expression
-    (41) arithmetic_expression -> . expression PLUS expression
-    (42) arithmetic_expression -> . expression MINUS expression
-    (43) arithmetic_expression -> . expression TIMES expression
-    (44) arithmetic_expression -> . expression DIVIDE expression
-    (45) simple_expression -> . STRING
-    (46) simple_expression -> . NUMBER
-    (47) simple_expression -> . VARIABLE
-    (48) simple_expression -> . IDENTIFIER
-
-    STRING          shift and go to state 46
-    NUMBER          shift and go to state 47
-    VARIABLE        shift and go to state 48
-    IDENTIFIER      shift and go to state 41
-
-    expression                     shift and go to state 66
-    comparison_expression          shift and go to state 43
-    arithmetic_expression          shift and go to state 44
-    simple_expression              shift and go to state 45
-
-state 59
-
-    (42) arithmetic_expression -> expression MINUS . expression
-    (37) expression -> . comparison_expression
-    (38) expression -> . arithmetic_expression
-    (39) expression -> . simple_expression
-    (40) comparison_expression -> . simple_expression EQUALS simple_expression
-    (41) arithmetic_expression -> . expression PLUS expression
-    (42) arithmetic_expression -> . expression MINUS expression
-    (43) arithmetic_expression -> . expression TIMES expression
-    (44) arithmetic_expression -> . expression DIVIDE expression
-    (45) simple_expression -> . STRING
-    (46) simple_expression -> . NUMBER
-    (47) simple_expression -> . VARIABLE
-    (48) simple_expression -> . IDENTIFIER
-
-    STRING          shift and go to state 46
-    NUMBER          shift and go to state 47
-    VARIABLE        shift and go to state 48
-    IDENTIFIER      shift and go to state 41
-
-    expression                     shift and go to state 67
-    comparison_expression          shift and go to state 43
-    arithmetic_expression          shift and go to state 44
-    simple_expression              shift and go to state 45
-
-state 60
-
-    (43) arithmetic_expression -> expression TIMES . expression
-    (37) expression -> . comparison_expression
-    (38) expression -> . arithmetic_expression
-    (39) expression -> . simple_expression
-    (40) comparison_expression -> . simple_expression EQUALS simple_expression
-    (41) arithmetic_expression -> . expression PLUS expression
-    (42) arithmetic_expression -> . expression MINUS expression
-    (43) arithmetic_expression -> . expression TIMES expression
-    (44) arithmetic_expression -> . expression DIVIDE expression
-    (45) simple_expression -> . STRING
-    (46) simple_expression -> . NUMBER
-    (47) simple_expression -> . VARIABLE
-    (48) simple_expression -> . IDENTIFIER
-
-    STRING          shift and go to state 46
-    NUMBER          shift and go to state 47
-    VARIABLE        shift and go to state 48
-    IDENTIFIER      shift and go to state 41
-
-    expression                     shift and go to state 68
-    comparison_expression          shift and go to state 43
-    arithmetic_expression          shift and go to state 44
-    simple_expression              shift and go to state 45
-
-state 61
-
-    (44) arithmetic_expression -> expression DIVIDE . expression
-    (37) expression -> . comparison_expression
-    (38) expression -> . arithmetic_expression
-    (39) expression -> . simple_expression
-    (40) comparison_expression -> . simple_expression EQUALS simple_expression
-    (41) arithmetic_expression -> . expression PLUS expression
-    (42) arithmetic_expression -> . expression MINUS expression
-    (43) arithmetic_expression -> . expression TIMES expression
-    (44) arithmetic_expression -> . expression DIVIDE expression
-    (45) simple_expression -> . STRING
-    (46) simple_expression -> . NUMBER
-    (47) simple_expression -> . VARIABLE
-    (48) simple_expression -> . IDENTIFIER
-
-    STRING          shift and go to state 46
-    NUMBER          shift and go to state 47
-    VARIABLE        shift and go to state 48
-    IDENTIFIER      shift and go to state 41
-
-    expression                     shift and go to state 69
-    comparison_expression          shift and go to state 43
-    arithmetic_expression          shift and go to state 44
-    simple_expression              shift and go to state 45
-
-state 62
-
-    (40) comparison_expression -> simple_expression EQUALS . simple_expression
-    (45) simple_expression -> . STRING
-    (46) simple_expression -> . NUMBER
-    (47) simple_expression -> . VARIABLE
-    (48) simple_expression -> . IDENTIFIER
-
-    STRING          shift and go to state 46
-    NUMBER          shift and go to state 47
-    VARIABLE        shift and go to state 48
-    IDENTIFIER      shift and go to state 41
-
-    simple_expression              shift and go to state 70
-
-state 63
-
-    (29) set_statement -> SET IDENTIFIER ASSIGN . expression
-    (37) expression -> . comparison_expression
-    (38) expression -> . arithmetic_expression
-    (39) expression -> . simple_expression
-    (40) comparison_expression -> . simple_expression EQUALS simple_expression
-    (41) arithmetic_expression -> . expression PLUS expression
-    (42) arithmetic_expression -> . expression MINUS expression
-    (43) arithmetic_expression -> . expression TIMES expression
-    (44) arithmetic_expression -> . expression DIVIDE expression
-    (45) simple_expression -> . STRING
-    (46) simple_expression -> . NUMBER
-    (47) simple_expression -> . VARIABLE
-    (48) simple_expression -> . IDENTIFIER
-
-    STRING          shift and go to state 46
-    NUMBER          shift and go to state 47
-    VARIABLE        shift and go to state 48
-    IDENTIFIER      shift and go to state 41
-
-    expression                     shift and go to state 71
-    comparison_expression          shift and go to state 43
-    arithmetic_expression          shift and go to state 44
-    simple_expression              shift and go to state 45
-
-state 64
-
-    (34) if_statement -> IF expression statements . END
-    (35) if_statement -> IF expression statements . ELSE statements END
-    (36) if_statement -> IF expression statements . ELSE if_statement
-
-    END             shift and go to state 72
-    ELSE            shift and go to state 73
-
-
-state 65
-
-    (32) assignment -> IDENTIFIER ASSIGN . IDENTIFIER LPAREN RPAREN
-    (33) assignment -> IDENTIFIER ASSIGN . IDENTIFIER LPAREN expression RPAREN
-
-    IDENTIFIER      shift and go to state 74
-
-
-state 66
-
-    (41) arithmetic_expression -> expression PLUS expression .
-    (41) arithmetic_expression -> expression . PLUS expression
-    (42) arithmetic_expression -> expression . MINUS expression
-    (43) arithmetic_expression -> expression . TIMES expression
-    (44) arithmetic_expression -> expression . DIVIDE expression
+    (18) arithmetic_expression -> expression PLUS expression .
+    (18) arithmetic_expression -> expression . PLUS expression
 
   ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for TIMES resolved as shift
-  ! shift/reduce conflict for DIVIDE resolved as shift
-    IDENTIFIER      reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    CONFIG          reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    VAR             reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    FUNCTION        reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    INTENT          reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    $end            reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    REPLY           reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    SET             reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    IF              reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    CALL            reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    LOG             reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    END             reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    ELSE            reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    RPAREN          reduce using rule 41 (arithmetic_expression -> expression PLUS expression .)
-    PLUS            shift and go to state 58
-    MINUS           shift and go to state 59
-    TIMES           shift and go to state 60
-    DIVIDE          shift and go to state 61
-
-  ! PLUS            [ reduce using rule 41 (arithmetic_expression -> expression PLUS expression .) ]
-  ! MINUS           [ reduce using rule 41 (arithmetic_expression -> expression PLUS expression .) ]
-  ! TIMES           [ reduce using rule 41 (arithmetic_expression -> expression PLUS expression .) ]
-  ! DIVIDE          [ reduce using rule 41 (arithmetic_expression -> expression PLUS expression .) ]
-
-
-state 67
-
-    (42) arithmetic_expression -> expression MINUS expression .
-    (41) arithmetic_expression -> expression . PLUS expression
-    (42) arithmetic_expression -> expression . MINUS expression
-    (43) arithmetic_expression -> expression . TIMES expression
-    (44) arithmetic_expression -> expression . DIVIDE expression
-
-  ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for TIMES resolved as shift
-  ! shift/reduce conflict for DIVIDE resolved as shift
-    IDENTIFIER      reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    CONFIG          reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    VAR             reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    FUNCTION        reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    INTENT          reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    $end            reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    REPLY           reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    SET             reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    IF              reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    CALL            reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    LOG             reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    END             reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    ELSE            reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    RPAREN          reduce using rule 42 (arithmetic_expression -> expression MINUS expression .)
-    PLUS            shift and go to state 58
-    MINUS           shift and go to state 59
-    TIMES           shift and go to state 60
-    DIVIDE          shift and go to state 61
-
-  ! PLUS            [ reduce using rule 42 (arithmetic_expression -> expression MINUS expression .) ]
-  ! MINUS           [ reduce using rule 42 (arithmetic_expression -> expression MINUS expression .) ]
-  ! TIMES           [ reduce using rule 42 (arithmetic_expression -> expression MINUS expression .) ]
-  ! DIVIDE          [ reduce using rule 42 (arithmetic_expression -> expression MINUS expression .) ]
-
-
-state 68
-
-    (43) arithmetic_expression -> expression TIMES expression .
-    (41) arithmetic_expression -> expression . PLUS expression
-    (42) arithmetic_expression -> expression . MINUS expression
-    (43) arithmetic_expression -> expression . TIMES expression
-    (44) arithmetic_expression -> expression . DIVIDE expression
-
-  ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for TIMES resolved as shift
-  ! shift/reduce conflict for DIVIDE resolved as shift
-    IDENTIFIER      reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    CONFIG          reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    VAR             reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    FUNCTION        reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    INTENT          reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    $end            reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    REPLY           reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    SET             reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    IF              reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    CALL            reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    LOG             reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    END             reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    ELSE            reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    RPAREN          reduce using rule 43 (arithmetic_expression -> expression TIMES expression .)
-    PLUS            shift and go to state 58
-    MINUS           shift and go to state 59
-    TIMES           shift and go to state 60
-    DIVIDE          shift and go to state 61
-
-  ! PLUS            [ reduce using rule 43 (arithmetic_expression -> expression TIMES expression .) ]
-  ! MINUS           [ reduce using rule 43 (arithmetic_expression -> expression TIMES expression .) ]
-  ! TIMES           [ reduce using rule 43 (arithmetic_expression -> expression TIMES expression .) ]
-  ! DIVIDE          [ reduce using rule 43 (arithmetic_expression -> expression TIMES expression .) ]
-
-
-state 69
-
-    (44) arithmetic_expression -> expression DIVIDE expression .
-    (41) arithmetic_expression -> expression . PLUS expression
-    (42) arithmetic_expression -> expression . MINUS expression
-    (43) arithmetic_expression -> expression . TIMES expression
-    (44) arithmetic_expression -> expression . DIVIDE expression
-
-  ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for TIMES resolved as shift
-  ! shift/reduce conflict for DIVIDE resolved as shift
-    IDENTIFIER      reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    CONFIG          reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    VAR             reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    FUNCTION        reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    INTENT          reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    $end            reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    REPLY           reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    SET             reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    IF              reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    CALL            reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    LOG             reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    END             reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    ELSE            reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    RPAREN          reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .)
-    PLUS            shift and go to state 58
-    MINUS           shift and go to state 59
-    TIMES           shift and go to state 60
-    DIVIDE          shift and go to state 61
-
-  ! PLUS            [ reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .) ]
-  ! MINUS           [ reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .) ]
-  ! TIMES           [ reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .) ]
-  ! DIVIDE          [ reduce using rule 44 (arithmetic_expression -> expression DIVIDE expression .) ]
-
-
-state 70
-
-    (40) comparison_expression -> simple_expression EQUALS simple_expression .
-
-    PLUS            reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    MINUS           reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    TIMES           reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    DIVIDE          reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    IDENTIFIER      reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    CONFIG          reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    VAR             reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    FUNCTION        reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    INTENT          reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    $end            reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    REPLY           reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    SET             reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    IF              reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    CALL            reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    LOG             reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    END             reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    ELSE            reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-    RPAREN          reduce using rule 40 (comparison_expression -> simple_expression EQUALS simple_expression .)
-
-
-state 71
-
-    (29) set_statement -> SET IDENTIFIER ASSIGN expression .
-    (41) arithmetic_expression -> expression . PLUS expression
-    (42) arithmetic_expression -> expression . MINUS expression
-    (43) arithmetic_expression -> expression . TIMES expression
-    (44) arithmetic_expression -> expression . DIVIDE expression
-
-    REPLY           reduce using rule 29 (set_statement -> SET IDENTIFIER ASSIGN expression .)
-    SET             reduce using rule 29 (set_statement -> SET IDENTIFIER ASSIGN expression .)
-    IF              reduce using rule 29 (set_statement -> SET IDENTIFIER ASSIGN expression .)
-    CALL            reduce using rule 29 (set_statement -> SET IDENTIFIER ASSIGN expression .)
-    LOG             reduce using rule 29 (set_statement -> SET IDENTIFIER ASSIGN expression .)
-    CONFIG          reduce using rule 29 (set_statement -> SET IDENTIFIER ASSIGN expression .)
-    VAR             reduce using rule 29 (set_statement -> SET IDENTIFIER ASSIGN expression .)
-    FUNCTION        reduce using rule 29 (set_statement -> SET IDENTIFIER ASSIGN expression .)
-    INTENT          reduce using rule 29 (set_statement -> SET IDENTIFIER ASSIGN expression .)
-    $end            reduce using rule 29 (set_statement -> SET IDENTIFIER ASSIGN expression .)
-    END             reduce using rule 29 (set_statement -> SET IDENTIFIER ASSIGN expression .)
-    ELSE            reduce using rule 29 (set_statement -> SET IDENTIFIER ASSIGN expression .)
-    PLUS            shift and go to state 58
-    MINUS           shift and go to state 59
-    TIMES           shift and go to state 60
-    DIVIDE          shift and go to state 61
-
-
-state 72
-
-    (34) if_statement -> IF expression statements END .
-
-    REPLY           reduce using rule 34 (if_statement -> IF expression statements END .)
-    SET             reduce using rule 34 (if_statement -> IF expression statements END .)
-    IF              reduce using rule 34 (if_statement -> IF expression statements END .)
-    CALL            reduce using rule 34 (if_statement -> IF expression statements END .)
-    LOG             reduce using rule 34 (if_statement -> IF expression statements END .)
-    CONFIG          reduce using rule 34 (if_statement -> IF expression statements END .)
-    VAR             reduce using rule 34 (if_statement -> IF expression statements END .)
-    FUNCTION        reduce using rule 34 (if_statement -> IF expression statements END .)
-    INTENT          reduce using rule 34 (if_statement -> IF expression statements END .)
-    $end            reduce using rule 34 (if_statement -> IF expression statements END .)
-    END             reduce using rule 34 (if_statement -> IF expression statements END .)
-    ELSE            reduce using rule 34 (if_statement -> IF expression statements END .)
-
-
-state 73
-
-    (35) if_statement -> IF expression statements ELSE . statements END
-    (36) if_statement -> IF expression statements ELSE . if_statement
-    (21) statements -> . statement statements
-    (22) statements -> . statement
-    (34) if_statement -> . IF expression statements END
-    (35) if_statement -> . IF expression statements ELSE statements END
-    (36) if_statement -> . IF expression statements ELSE if_statement
-    (23) statement -> . reply_statement
-    (24) statement -> . set_statement
-    (25) statement -> . if_statement
-    (26) statement -> . call_statement
-    (27) statement -> . log_statement
-    (28) reply_statement -> . REPLY STRING
-    (29) set_statement -> . SET IDENTIFIER ASSIGN expression
-    (31) call_statement -> . CALL assignment
-    (30) log_statement -> . LOG STRING
-
-    IF              shift and go to state 38
-    REPLY           shift and go to state 36
-    SET             shift and go to state 37
-    CALL            shift and go to state 39
-    LOG             shift and go to state 40
-
-    statements                     shift and go to state 75
-    if_statement                   shift and go to state 76
-    statement                      shift and go to state 30
-    reply_statement                shift and go to state 31
-    set_statement                  shift and go to state 32
-    call_statement                 shift and go to state 34
-    log_statement                  shift and go to state 35
-
-state 74
-
-    (32) assignment -> IDENTIFIER ASSIGN IDENTIFIER . LPAREN RPAREN
-    (33) assignment -> IDENTIFIER ASSIGN IDENTIFIER . LPAREN expression RPAREN
-
-    LPAREN          shift and go to state 77
-
-
-state 75
-
-    (35) if_statement -> IF expression statements ELSE statements . END
-
-    END             shift and go to state 78
-
-
-state 76
-
-    (36) if_statement -> IF expression statements ELSE if_statement .
-    (25) statement -> if_statement .
-
-  ! reduce/reduce conflict for REPLY resolved using rule 25 (statement -> if_statement .)
-  ! reduce/reduce conflict for SET resolved using rule 25 (statement -> if_statement .)
-  ! reduce/reduce conflict for IF resolved using rule 25 (statement -> if_statement .)
-  ! reduce/reduce conflict for CALL resolved using rule 25 (statement -> if_statement .)
-  ! reduce/reduce conflict for LOG resolved using rule 25 (statement -> if_statement .)
-  ! reduce/reduce conflict for END resolved using rule 25 (statement -> if_statement .)
-    CONFIG          reduce using rule 36 (if_statement -> IF expression statements ELSE if_statement .)
-    VAR             reduce using rule 36 (if_statement -> IF expression statements ELSE if_statement .)
-    FUNCTION        reduce using rule 36 (if_statement -> IF expression statements ELSE if_statement .)
-    INTENT          reduce using rule 36 (if_statement -> IF expression statements ELSE if_statement .)
-    $end            reduce using rule 36 (if_statement -> IF expression statements ELSE if_statement .)
-    ELSE            reduce using rule 36 (if_statement -> IF expression statements ELSE if_statement .)
-    REPLY           reduce using rule 25 (statement -> if_statement .)
-    SET             reduce using rule 25 (statement -> if_statement .)
-    IF              reduce using rule 25 (statement -> if_statement .)
-    CALL            reduce using rule 25 (statement -> if_statement .)
-    LOG             reduce using rule 25 (statement -> if_statement .)
-    END             reduce using rule 25 (statement -> if_statement .)
-
-  ! REPLY           [ reduce using rule 36 (if_statement -> IF expression statements ELSE if_statement .) ]
-  ! SET             [ reduce using rule 36 (if_statement -> IF expression statements ELSE if_statement .) ]
-  ! IF              [ reduce using rule 36 (if_statement -> IF expression statements ELSE if_statement .) ]
-  ! CALL            [ reduce using rule 36 (if_statement -> IF expression statements ELSE if_statement .) ]
-  ! LOG             [ reduce using rule 36 (if_statement -> IF expression statements ELSE if_statement .) ]
-  ! END             [ reduce using rule 36 (if_statement -> IF expression statements ELSE if_statement .) ]
-
-
-state 77
-
-    (32) assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN . RPAREN
-    (33) assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN . expression RPAREN
-    (37) expression -> . comparison_expression
-    (38) expression -> . arithmetic_expression
-    (39) expression -> . simple_expression
-    (40) comparison_expression -> . simple_expression EQUALS simple_expression
-    (41) arithmetic_expression -> . expression PLUS expression
-    (42) arithmetic_expression -> . expression MINUS expression
-    (43) arithmetic_expression -> . expression TIMES expression
-    (44) arithmetic_expression -> . expression DIVIDE expression
-    (45) simple_expression -> . STRING
-    (46) simple_expression -> . NUMBER
-    (47) simple_expression -> . VARIABLE
-    (48) simple_expression -> . IDENTIFIER
-
-    RPAREN          shift and go to state 79
-    STRING          shift and go to state 46
-    NUMBER          shift and go to state 47
-    VARIABLE        shift and go to state 48
-    IDENTIFIER      shift and go to state 41
-
-    expression                     shift and go to state 80
-    comparison_expression          shift and go to state 43
-    arithmetic_expression          shift and go to state 44
-    simple_expression              shift and go to state 45
-
-state 78
-
-    (35) if_statement -> IF expression statements ELSE statements END .
-
-    REPLY           reduce using rule 35 (if_statement -> IF expression statements ELSE statements END .)
-    SET             reduce using rule 35 (if_statement -> IF expression statements ELSE statements END .)
-    IF              reduce using rule 35 (if_statement -> IF expression statements ELSE statements END .)
-    CALL            reduce using rule 35 (if_statement -> IF expression statements ELSE statements END .)
-    LOG             reduce using rule 35 (if_statement -> IF expression statements ELSE statements END .)
-    CONFIG          reduce using rule 35 (if_statement -> IF expression statements ELSE statements END .)
-    VAR             reduce using rule 35 (if_statement -> IF expression statements ELSE statements END .)
-    FUNCTION        reduce using rule 35 (if_statement -> IF expression statements ELSE statements END .)
-    INTENT          reduce using rule 35 (if_statement -> IF expression statements ELSE statements END .)
-    $end            reduce using rule 35 (if_statement -> IF expression statements ELSE statements END .)
-    END             reduce using rule 35 (if_statement -> IF expression statements ELSE statements END .)
-    ELSE            reduce using rule 35 (if_statement -> IF expression statements ELSE statements END .)
-
-
-state 79
-
-    (32) assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .
-
-    REPLY           reduce using rule 32 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .)
-    SET             reduce using rule 32 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .)
-    IF              reduce using rule 32 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .)
-    CALL            reduce using rule 32 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .)
-    LOG             reduce using rule 32 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .)
-    CONFIG          reduce using rule 32 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .)
-    VAR             reduce using rule 32 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .)
-    FUNCTION        reduce using rule 32 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .)
-    INTENT          reduce using rule 32 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .)
-    $end            reduce using rule 32 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .)
-    END             reduce using rule 32 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .)
-    ELSE            reduce using rule 32 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN RPAREN .)
-
-
-state 80
-
-    (33) assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression . RPAREN
-    (41) arithmetic_expression -> expression . PLUS expression
-    (42) arithmetic_expression -> expression . MINUS expression
-    (43) arithmetic_expression -> expression . TIMES expression
-    (44) arithmetic_expression -> expression . DIVIDE expression
-
-    RPAREN          shift and go to state 81
-    PLUS            shift and go to state 58
-    MINUS           shift and go to state 59
-    TIMES           shift and go to state 60
-    DIVIDE          shift and go to state 61
-
-
-state 81
-
-    (33) assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .
-
-    REPLY           reduce using rule 33 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .)
-    SET             reduce using rule 33 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .)
-    IF              reduce using rule 33 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .)
-    CALL            reduce using rule 33 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .)
-    LOG             reduce using rule 33 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .)
-    CONFIG          reduce using rule 33 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .)
-    VAR             reduce using rule 33 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .)
-    FUNCTION        reduce using rule 33 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .)
-    INTENT          reduce using rule 33 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .)
-    $end            reduce using rule 33 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .)
-    END             reduce using rule 33 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .)
-    ELSE            reduce using rule 33 (assignment -> IDENTIFIER ASSIGN IDENTIFIER LPAREN expression RPAREN .)
+    REPLY           reduce using rule 18 (arithmetic_expression -> expression PLUS expression .)
+    LOG             reduce using rule 18 (arithmetic_expression -> expression PLUS expression .)
+    WAIT            reduce using rule 18 (arithmetic_expression -> expression PLUS expression .)
+    STEP            reduce using rule 18 (arithmetic_expression -> expression PLUS expression .)
+    $end            reduce using rule 18 (arithmetic_expression -> expression PLUS expression .)
+    PLUS            shift and go to state 25
+
+  ! PLUS            [ reduce using rule 18 (arithmetic_expression -> expression PLUS expression .) ]
 
 WARNING: 
 WARNING: Conflicts:
 WARNING: 
-WARNING: shift/reduce conflict for PLUS in state 66 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 66 resolved as shift
-WARNING: shift/reduce conflict for TIMES in state 66 resolved as shift
-WARNING: shift/reduce conflict for DIVIDE in state 66 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 67 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 67 resolved as shift
-WARNING: shift/reduce conflict for TIMES in state 67 resolved as shift
-WARNING: shift/reduce conflict for DIVIDE in state 67 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 68 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 68 resolved as shift
-WARNING: shift/reduce conflict for TIMES in state 68 resolved as shift
-WARNING: shift/reduce conflict for DIVIDE in state 68 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 69 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 69 resolved as shift
-WARNING: shift/reduce conflict for TIMES in state 69 resolved as shift
-WARNING: shift/reduce conflict for DIVIDE in state 69 resolved as shift
-WARNING: reduce/reduce conflict in state 76 resolved using rule (statement -> if_statement)
-WARNING: rejected rule (if_statement -> IF expression statements ELSE if_statement) in state 76
+WARNING: shift/reduce conflict for PLUS in state 27 resolved as shift

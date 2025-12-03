@@ -1,128 +1,66 @@
 """
-增强版DSL脚本引擎
+dsl_engine.py -
 基于语法分析器的解释执行引擎
 """
 
 import datetime
 import os
-import re
-import csv
 from typing import Dict, Any, List, Optional
-
-# 导入parser模块
-from parser import Parser
+from llm_client import LLMClient
 
 class DSLEngine:
-    def __init__(self, script_file: str, debug: bool = False):
+    def __init__(self, script_file: str = None, script_content: str = None, debug: bool = False):
         """
         初始化DSL引擎
-        
-        Args:
-            script_file: DSL脚本文件路径
-            debug: 是否启用调试模式
         """
-        # 解析脚本文件路径
-        if not os.path.isabs(script_file):
-            base_dir = os.path.dirname(__file__)
-            self.script_file = os.path.join(base_dir, script_file)
-        else:
-            self.script_file = script_file
-        
         self.debug = debug
-        self.ast = None  # 抽象语法树
-        self.variables = {}  # 变量存储
-        self.registered_functions = {}  # 注册的Python函数
-        self.current_intent = None  # 当前意图
-        self.waiting_for = None  # 等待输入类型
+        self.ast = None
+        self.variables = {
+            'user_input': '',
+            'input_history': []
+        }
+        self.current_step = None
+        self.input_history = []
         
-        # 初始化内置函数
-        self._init_builtin_functions()
-        # 加载和解析脚本
-        self._load_script()
+        self.llm_client = LLMClient(debug=debug)
+
+        # 加载脚本
+        if script_file:
+            self._load_script_from_file(script_file)
+        elif script_content:
+            self._load_script_from_content(script_content)
+        else:
+            raise ValueError("必须提供script_file或script_content参数")
 
     def _debug(self, msg: str):
         """调试信息输出"""
         if self.debug:
             print(f"[DEBUG] {msg}")
 
-    def _init_builtin_functions(self):
-        """初始化内置函数"""
-
-        def extract_order_number(text=None):
-            # 匹配 ORDER 后面跟着数字的模式
-            pattern = r'ORDER\d+'
-            match = re.search(pattern, text)
-            return "未找到订单号" if not match else match.group()
-
-        def calc_delivery(order_id=None):
-            """根据订单号计算配送时间"""
-            if not order_id or not isinstance(order_id, str):
-                return "未知"
-            
-            # 从根目录的order.csv文件读取订单信息
-            csv_file = os.path.join(os.path.dirname(__file__), "data", "order.csv")  # 数据目录
-            
-            try:
-                with open(csv_file, 'r', encoding='utf-8') as f:
-                    reader = csv.DictReader(f)
-                    for row in reader:
-                        # 检查订单号是否匹配
-                        csv_order_num = row.get('订单号', '').strip()
-                        input_order_num = order_id.replace('ORDER', '') if order_id.startswith('ORDER') else order_id
-                        
-                        if csv_order_num == input_order_num:
-                            delivery_time = row.get('发货时间', '未知').strip()
-                            return delivery_time if delivery_time else "未知"
-                
-                return "订单未找到"
-            except FileNotFoundError:
-                return "订单文件不存在"
-            except Exception as e:
-                self._debug(f"读取订单文件错误: {e}")
-                return "系统错误"
+    def _load_script_from_file(self, script_file: str):
+        """从文件加载脚本"""
+        if not os.path.isabs(script_file):
+            base_dir = os.path.dirname(__file__)
+            self.script_file = os.path.join(base_dir, script_file)
+        else:
+            self.script_file = script_file
         
-            """验证订单号是否存在"""
-            if not order_id or not isinstance(order_id, str):
-                return False
-            
-            # 从根目录的order.csv文件验证订单是否存在
-            base_dir = os.path.dirname(os.path.dirname(__file__))  # 获取根目录
-            csv_file = os.path.join(base_dir, "data", "order.csv")  # 数据目录
-            
-            try:
-                with open(csv_file, 'r', encoding='utf-8') as f:
-                    reader = csv.DictReader(f)
-                    for row in reader:
-                        csv_order_num = row.get('订单号', '').strip()
-                        input_order_num = order_id.replace('ORDER', '')
-                        
-                        if csv_order_num == input_order_num:
-                            return True
-                return False
-            except FileNotFoundError:
-                self._debug("订单文件不存在")
-                return False
-            except Exception as e:
-                self._debug(f"验证订单错误: {e}")
-                return False
-        
-        # 注册内置函数
-        self.register_function('calc_delivery', calc_delivery)
-        self.register_function('extract_order_number', extract_order_number)
-
-
-    def register_function(self, name: str, func):
-        """注册Python函数供DSL调用"""
-        self.registered_functions[name] = func
-        self._debug(f"注册函数: {name}")
-
-    def _load_script(self):
-        """加载和解析DSL脚本"""
         try:
             with open(self.script_file, 'r', encoding='utf-8') as f:
                 script_content = f.read()
-            
-            # 使用parser解析脚本
+            self._parse_script(script_content)
+        except FileNotFoundError:
+            raise Exception(f"脚本文件不存在: {self.script_file}")
+
+    def _load_script_from_content(self, script_content: str):
+        """从内容加载脚本"""
+        self.script_file = None
+        self._parse_script(script_content)
+
+    def _parse_script(self, script_content: str):
+        """解析脚本内容"""
+        try:
+            from parser import Parser
             parser = Parser(debug=self.debug)
             self.ast = parser.parse(script_content)
             
@@ -130,466 +68,231 @@ class DSLEngine:
                 raise Exception("脚本解析失败")
             
             self._debug("脚本解析成功")
-            self._extract_vars()
             
-        except FileNotFoundError:
-            raise Exception(f"脚本文件不存在: {self.script_file}")
         except Exception as e:
-            raise Exception(f"脚本加载失败: {e}")
-
-    def _extract_vars(self):
-        """从AST中提取配置和变量初始值"""
-        if not self.ast or 'children' not in self.ast:
-            return
-        
-        for section in self.ast['children']:
-            self._process_var_section(section)
-
-    def _process_var_section(self, var_section):
-        """处理变量区块"""
-        for item in var_section.get('children', []):
-            if item['type'] == 'VarDeclaration':
-                var_name = item.get('value', '')
-                # 变量初始值在第一个子节点中
-                if item.get('children'):
-                    value_node = item['children'][0]
-                    value = self._evaluate_expression(value_node)
-                    self.variables[var_name] = value
-                    self._debug(f"变量: {var_name} = {value}")
+            raise Exception(f"脚本解析失败: {e}")
 
     def _evaluate_expression(self, node: Dict) -> Any:
         """评估表达式节点"""
         if not isinstance(node, dict):
-            return node
+            return str(node)
 
         node_type = node.get('type', '')
         
         if node_type == 'String':
             return node.get('value', '')
-        elif node_type == 'Number':
-            return node.get('value', 0)
         elif node_type == 'Variable':
-            var_name = node.get('value', '')
-            # 去掉$前缀
-            if var_name.startswith('$'):
-                var_name = var_name[1:]
+            var_name = node.get('value', '')[1:]  # 去掉$前缀
             return self.variables.get(var_name, '')
-        elif node_type == 'Identifier':
-            return node.get('value', '')
         elif node_type == 'Arithmetic':
             return self._evaluate_arithmetic(node)
-        elif node_type == 'Comparison':
-            return self._evaluate_comparison(node)
         else:
-            self._debug(f"未知表达式类型: {node_type}")
-            return None
+            return ''
 
     def _evaluate_arithmetic(self, node: Dict) -> Any:
         """评估算术表达式"""
         if not node.get('children') or len(node['children']) != 2:
-            return 0
+            return ""
         
         left = self._evaluate_expression(node['children'][0])
         right = self._evaluate_expression(node['children'][1])
-        operator = node.get('value', '')
+        operator = node.get('value', '+')
         
-        try:
-            if operator == '+':
-                # 支持字符串连接和数字相加
-                if isinstance(left, str) or isinstance(right, str):
-                    return str(left) + str(right)
-                return left + right
-            elif operator == '-':
-                return left - right
-            elif operator == '*':
-                return left * right
-            elif operator == '/':
-                return left / right if right != 0 else 0
-            else:
-                return 0
-        except Exception as e:
-            self._debug(f"算术运算错误: {e}")
-            return 0
-
-    def _evaluate_comparison(self, node: Dict) -> bool:
-        """评估比较表达式"""
-        if not node.get('children') or len(node['children']) != 2:
-            return False
-        
-        left = self._evaluate_expression(node['children'][0])
-        right = self._evaluate_expression(node['children'][1])
-        operator = node.get('value', '')
-        
-        try:
-            if operator == '==':
-                return left == right
-            else:
-                return False
-        except Exception as e:
-            self._debug(f"比较运算错误: {e}")
-            return False
+        if operator == '+':
+            return str(left) + str(right)
+        return ""
 
     def _execute_statement(self, statement: Dict, user_input: str = '') -> List[str]:
         """执行单个语句"""
         responses = []
         node_type = statement.get('type', '')
         
+        # 更新用户输入变量
+        self.variables['user_input'] = user_input
+        if user_input:
+            self.input_history.append(user_input)
+            self.variables['input_history'] = self.input_history
+        
         if node_type == 'Reply':
-            # 处理回复语句
-            reply_text = statement.get('value', '')
-            # 替换变量
-            reply_text = self._replace_variables(reply_text, user_input)
-            responses.append(reply_text)
-            
-        elif node_type == 'Set':
-            # 处理赋值语句
-            var_name = statement.get('value', '')
-            if statement.get('children'):
-                value_node = statement['children'][0]
-                value = self._evaluate_expression(value_node)
-                self.variables[var_name] = value
-                self._debug(f"设置变量: {var_name} = {value}")
+            expression = statement.get('value')
+            if expression:
+                reply_text = self._evaluate_expression(expression)
+                responses.append(reply_text)
                 
         elif node_type == 'Log':
-            # 处理日志语句
-            log_text = statement.get('value', '')
-            log_text = self._replace_variables(log_text, user_input)
-            
-            # 写入日志文件
-            log_file_path = os.path.join(os.path.dirname(__file__), 'log.log')
-            os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
-            
-            # 带时间戳的日志
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            log_entry = f"[{timestamp}] {log_text}\n"
-            
-            try:
-                with open(log_file_path, 'a', encoding='utf-8') as log_file:
-                    log_file.write(log_entry)
-            except Exception as e:
-                print(f"❌ 写入日志文件失败: {e}")
-            
-        elif node_type == 'Call':
-            # 处理函数调用
-            if statement.get('children'):
-                assignment_node = statement['children'][0]
-                self._execute_function_call(assignment_node, user_input)
+            expression = statement.get('value')
+            if expression:
+                log_text = self._evaluate_expression(expression)
+                self._write_log(log_text)
                 
-        elif node_type == 'IfStatement':
-            # 处理条件语句
-            responses.extend(self._execute_if_statement(statement, user_input))
-            
+        elif node_type == 'Wait':
+            responses.extend(self._execute_wait_statement(statement, user_input))
+                
         return responses
 
-    def _execute_if_statement(self, if_node: Dict, user_input: str) -> List[str]:
-        """执行条件语句"""
+    def _write_log(self, log_text: str):
+        """写入日志文件"""
+        log_file_path = "dsl_engine.log" if not self.script_file else self.script_file + '.log'
+        
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_entry = f"[{timestamp}] {log_text}\n"
+        
+        try:
+            with open(log_file_path, 'a', encoding='utf-8') as log_file:
+                log_file.write(log_entry)
+            self._debug(f"日志写入成功: {log_text}")
+        except Exception as e:
+            print(f"❌ 写入日志文件失败: {e}")
+    
+    def _wait_for_user_input(self, prompt: str = "请输入: ") -> str:
+        """等待用户输入"""
+        return input(prompt).strip()
+    
+    def _intent_recognition(self, user_input: str) -> str:
+        """使用LLM进行意图识别"""
+        intent = self.llm_client.recognize_intent(
+            user_input, 
+            self.get_steps()
+        )
+        self._debug(f"识别到的意图: {intent}")
+        return intent
+    
+    def _execute_wait_statement(self, wait_statement: Dict, current_user_input: str) -> List[str]:
+        """执行 wait 语句（阻塞等待用户输入）"""
         responses = []
         
-        if not if_node.get('children'):
-            return responses
+        # 获取意图列表
+        intents = wait_statement.get('value', [])
         
-        # 第一个子节点是条件表达式
-        condition_node = if_node['children'][0]
-        condition_result = self._evaluate_expression(condition_node)
+        if not intents:
+            return []
         
-        self._debug(f"条件评估: {condition_result}")
-        
-        if condition_result:
-            # 执行then分支
-            for i in range(1, len(if_node['children'])):
-                child = if_node['children'][i]
-                if child['type'] in ['ThenBranch', 'ElseBranch']:
-                    # 执行分支中的语句
-                    for stmt in child.get('children', []):
-                        responses.extend(self._execute_statement(stmt, user_input))
-                    break
+        # 等待用户输入
+        while True:
+            try:
+                user_input = input("👤: ").strip()
+                
+                if user_input.lower() in ['退出', 'quit', 'exit', 'bye']:
+                    print("🤖: 感谢使用，再见！")
+                    exit(0)
+                
+                if not user_input:
+                    continue
+                
+                # 使用LLM识别用户输入属于哪个意图
+                matched_intent = self._recognize_intent_from_list(user_input, intents, responses)
+                
+                # 决定跳转到哪个步骤
+                if matched_intent and matched_intent in self.get_steps():
+                    next_step = matched_intent
                 else:
-                    # 直接执行语句
-                    responses.extend(self._execute_statement(child, user_input))
-        else:
-            # 查找else分支
-            found_then = False
-            for i in range(1, len(if_node['children'])):
-                child = if_node['children'][i]
-                if child['type'] == 'ThenBranch':
-                    found_then = True
-                elif child['type'] == 'ElseBranch' and found_then:
-                    # 执行else分支
-                    for stmt in child.get('children', []):
-                        responses.extend(self._execute_statement(stmt, user_input))
-                    break
+                    # 如果没有匹配的意图，使用第一个意图作为默认
+                    next_step = intents[0]
+                self._debug(f"跳转到步骤: {next_step}")
+                
+                # 执行跳转到下一步
+                response = self.process(next_step, user_input)
+                if response:
+                    responses.append(response)
+                
+                break  # 处理完一次输入后退出循环
+                
+            except KeyboardInterrupt:
+                print("\n🤖: 感谢使用，再见！")
+                exit(0)
+            except Exception as e:
+                if self.debug:
+                    import traceback
+                    traceback.print_exc()
+                print(f"🤖: 系统出现错误: {e}")
+                continue
         
         return responses
+    
+    def _recognize_intent_from_list(self, user_input: str, intents: List[str], responses: List[str]) -> str:
+        """从意图列表中识别用户输入属于哪个意图"""
+        if not intents:
+            return ""
+        
+        # 使用LLM进行意图识别
+        matched_intent = self.llm_client.recognize_intent(user_input, intents, responses)
+        self._debug(f"用户输入: '{user_input}' 匹配到的意图: {matched_intent}")
+        return matched_intent
 
-    def _execute_function_call(self, assignment_node: Dict, user_input: str):
-        """执行函数调用"""
-        if assignment_node['type'] != 'Assignment':
-            return
+    def get_steps(self) -> List[str]:
+        """获取所有可用的步骤名称"""
+        steps = []
+        if not self.ast:
+            return steps
         
-        # 获取变量名和函数调用
-        var_name = assignment_node.get('value', '')
-        if not assignment_node.get('children'):
-            return
-        
-        func_call_node = assignment_node['children'][0]
-        if func_call_node['type'] != 'FunctionCall':
-            return
-        
-        func_name = func_call_node.get('value', '')
-        
-        # 准备参数 - 修复参数解析
-        args = []
-        if func_call_node.get('children'):
-            for arg_node in func_call_node['children']:
-                # 先评估参数表达式，获取实际值
-                arg_value = self._evaluate_expression(arg_node)
-                args.append(arg_value)
-        
-        self._debug(f"调用函数 {func_name}，参数: {args}")
-        
-        # 调用函数
-        result = None
-        if func_name in self.registered_functions:
-            try:
-                result = self.registered_functions[func_name](*args)
-                self._debug(f"函数调用结果: {func_name}({args}) = {result}")
-            except Exception as e:
-                self._debug(f"函数调用错误: {e}")
+        # 处理不同的AST结构
+        if 'children' in self.ast:
+            # 标准结构
+            sections = self.ast['children']
         else:
-            self._debug(f"未注册的函数: {func_name}")
+            # 简化模式结构
+            return ["greeting", "farewell", "help", "thanks", "unknown"]
         
-        # 存储结果
-        if result is not None:
-            self.variables[var_name] = result
+        for section in sections:
+            if isinstance(section, dict) and section.get('type') == 'Step':
+                step_name = section.get('value', '')
+                if step_name:
+                    steps.append(step_name)
+        
+        return steps
 
-    def _replace_variables(self, text: str, user_input: str) -> str:
-        """替换文本中的变量引用"""
-        def replace_match(match):
-            var_name = match.group(1)
-            if var_name == 'user_input':
-                return user_input
-            return str(self.variables.get(var_name, ''))
+    def process(self, step_name: str, user_input: str = '') -> str:
+        """处理步骤并生成回复"""
+        self._debug(f"处理步骤: {step_name}, 输入: {user_input}")
         
-        # 替换 $变量名 格式
-        result = re.sub(r'\$(\w+)', replace_match, text)
-        return result
-
-    def get_intents(self) -> List[str]:
-        """获取所有可用的意图名称"""
-        intents = []
-        if not self.ast or 'children' not in self.ast:
-            return intents
-        
-        for section in self.ast['children']:
-            if section['type'] == 'Intent':
-                intent_name = section.get('value', '')
-                if intent_name:
-                    intents.append(intent_name)
-        
-        return intents
-
-    def process(self, intent_name: str, user_input: str = '') -> str:
-        """处理意图并生成回复"""
-        self._debug(f"处理意图: {intent_name}, 输入: {user_input}")
-        
-        # 设置用户输入变量 - 确保在表达式求值前设置
-        self.variables['user_input'] = user_input
-        
-        # 查找匹配的意图
-        target_intent = None
+        # 查找匹配的步骤
+        target_step = None
         if self.ast and 'children' in self.ast:
             for section in self.ast['children']:
-                if section['type'] == 'Intent' and section.get('value') == intent_name:
-                    target_intent = section
+                if section['type'] == 'Step' and section.get('value') == step_name:
+                    target_step = section
                     break
         
-        if not target_intent:
-            return f"未知意图: {intent_name}"
+        if not target_step:
+            available_steps = self.get_steps()
+            return f"未知步骤: {step_name}。可用步骤: {', '.join(available_steps)}"
         
-        # 执行意图中的语句
+        # 设置当前步骤
+        self.current_step = step_name
+        
+        # 执行步骤中的语句
         responses = []
-        for statement in target_intent.get('children', []):
-            responses.extend(self._execute_statement(statement, user_input))
+        statements = target_step.get('children', [])
         
-        # 更新当前意图
-        self.current_intent = intent_name
+        for statement in statements:
+            node_type = statement.get('type', '')
+            
+            if node_type == 'Wait':
+                # 对于wait语句，先输出之前的回复
+                if responses:
+                    print(f"🤖: {'\n'.join(responses)}")
+                    responses = []  # 清空已输出的回复
+                
+                # 执行wait语句（会阻塞等待用户输入）
+                wait_responses = self._execute_wait_statement(statement, user_input)
+                responses.extend(wait_responses)
+            else:
+                # 其他语句正常执行
+                responses.extend(self._execute_statement(statement, user_input))
         
         return '\n'.join(responses) if responses else ""
-
-    def get_waiting_status(self) -> Optional[str]:
-        """获取当前等待状态"""
-        return self.waiting_for
-
-    def reset(self):
-        """重置引擎状态"""
-        self.variables.clear()
-        self.current_intent = None
-        self.waiting_for = None
-        # 重新加载配置和变量初始值
-        self._extract_vars()
 
     def get_variables(self) -> Dict[str, Any]:
         """获取当前变量状态"""
         return self.variables.copy()
 
-# 测试函数
-def test_engine():
-    """测试DSL引擎"""
-    print("=== 测试DSL引擎 ===")
-
-    script_path = "script.dsl"
+    def get_current_step(self) -> Optional[str]:
+        """获取当前步骤"""
+        return self.current_step
     
-    try:
-        # 创建引擎
-        engine = DSLEngine(script_path, debug=True)
-        engine.process("provide_order_number", "我的订单号是ORDER123")
-        return  # 仅测试初始化和处理，避免重复输出
-        # 测试可用意图
-        intents = engine.get_intents()
-        print(f"可用意图: {intents}")
-
-        print("\n" + "="*50)
-        print("测试1: 正常流程测试")
-        print("="*50)
-
-        # 测试正常流程
-        response1 = engine.process("greeting")
-        print("响应1 - greeting:")
-        print(response1)
-        print(f"当前变量: {engine.get_variables()}")
-
-        response2 = engine.process("provide_order_number", "ORDER123")
-        print("响应2 - provide_order_number ORDER123:")
-        print(response2)
-        print(f"当前变量: {engine.get_variables()}")
-
-        print("\n" + "="*50)
-        print("测试2: 边界值测试")
-        print("="*50)
-
-        # 测试边界值
-        response3 = engine.process("provide_order_number", "")  # 空订单号
-        print("响应3 - 空订单号:")
-        print(response3)
-
-        response4 = engine.process("provide_order_number", "ORDER")  # 只有ORDER前缀
-        print("响应4 - 只有ORDER前缀:")
-        print(response4)
-
-        response5 = engine.process("provide_order_number", "123")  # 没有ORDER前缀
-        print("响应5 - 没有ORDER前缀:")
-        print(response5)
-
-        print("\n" + "="*50)
-        print("测试3: 错误处理测试")
-        print("="*50)
-
-        # 测试错误处理
-        response6 = engine.process("unknown_intent")  # 不存在的意图
-        print("响应6 - 未知意图:")
-        print(response6)
-
-        # response7 = engine.process("provide_order_number", "ORDER123", "extra_param")  # 多余参数
-        # print("响应7 - 多余参数:")
-        # print(response7)
-
-        response8 = engine.process("greeting", "unexpected_param")  # 不应有参数的意图
-        print("响应8 - greeting带参数:")
-        print(response8)
-
-        print("\n" + "="*50)
-        print("测试4: 重复操作测试")
-        print("="*50)
-
-        # 测试重复操作
-        response9 = engine.process("provide_order_number", "ORDER456")  # 新订单号
-        print("响应9 - 新订单号ORDER456:")
-        print(response9)
-        print(f"当前变量: {engine.get_variables()}")
-
-        response10 = engine.process("provide_order_number", "ORDER456")  # 重复相同订单号
-        print("响应10 - 重复ORDER456:")
-        print(response10)
-
-        print("\n" + "="*50)
-        print("测试5: 特殊字符测试")
-        print("="*50)
-
-        # 测试特殊字符
-        special_cases = [
-            "ORDER 123",      # 带空格
-            "ORDER-123",      # 带连字符
-            "ORDER_123",      # 带下划线
-            "ORDER123 ",      # 末尾空格
-            " ORDER123",      # 开头空格
-            "ORDER123ABC",    # 字母数字混合
-            "123ORDER",       # 后缀ORDER
-        ]
-
-        for i, case in enumerate(special_cases, 1):
-            response = engine.process("provide_order_number", case)
-            print(f"响应{10+i} - 特殊案例 '{case}':")
-            print(response)
-
-        print("\n" + "="*50)
-        print("测试6: 变量状态测试")
-        print("="*50)
-
-        # 检查变量状态
-        variables = engine.get_variables()
-        print("最终变量状态:")
-        for key, value in variables.items():
-            print(f"  {key}: {value}")
-
-        print("\n" + "="*50)
-        print("测试7: 重置功能测试")
-        print("="*50)
-
-        # 测试重置
-        engine.reset()
-        reset_variables = engine.get_variables()
-        print(f"重置后变量: {reset_variables}")
-
-        # 重置后重新测试
-        response_reset = engine.process("greeting")
-        print("重置后greeting响应:")
-        print(response_reset)
-
-        print("\n" + "="*50)
-        print("测试8: 性能测试")
-        print("="*50)
-
-        # 简单性能测试
-        import time
-
-        start_time = time.time()
-        for i in range(100):  # 快速调用100次
-            engine.process("greeting")
-        end_time = time.time()
-
-        print(f"100次greeting调用耗时: {end_time - start_time:.4f}秒")
-
-        # 测试订单号查找性能
-        start_time = time.time()
-        for i in range(50):
-            engine.process("provide_order_number", f"ORDER{i:03d}")
-        end_time = time.time()
-        print(f"50次订单查询耗时: {end_time - start_time:.4f}秒")
-
-        print("\n" + "="*50)
-        print("测试完成")
-        print("="*50)
-        
-    except Exception as e:
-        print(f"❌ 测试失败: {e}")
-        import traceback
-        traceback.print_exc()
-        
-    finally:
-        # 清理测试文件
-        if os.path.exists(script_path):
-            os.remove(script_path)
-            print(f"✅ 测试脚本已清理: {script_path}")
-
-if __name__ == "__main__":
-    test_engine()
+    def start(self, initial_step: str = "greeting", initial_input: str = ""):
+        """启动机器人交互循环"""
+        # 直接从初始步骤开始处理
+        response = self.process(initial_step, initial_input)
+        if response:
+            print(f"🤖: {response}")

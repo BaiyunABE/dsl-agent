@@ -1,110 +1,46 @@
-var
-    last_order = ""
-    global_status = ""
-
-intent "greeting"
+step "greeting"
     reply "您好！欢迎光临！"
     reply "请问有什么可以帮您？"
-    set global_status = ""
+    wait "greeting" "return_request" "return_request" "complaint" "ask_human_agent" "thankyou" "unknown"
 
-intent "check_order"
-    reply "正在查询订单信息..."
-    set global_status = "check_order"
-    reply "请问您要查询哪个订单号？"
-
-intent "provide_order_number"
-    call order_id = extract_order_number($user_input)
-    if $order_id == "未找到订单号"
-        reply "请提供有效订单号（例如：ORDER123）。"
-    else
-        call delivery_date = calc_delivery($order_id)
-        if $delivery_date == "订单未找到"
-            reply "订单 $order_id 未找到"
-        else
-            set last_order = $order_id
-            reply "订单 $order_id 验证成功！"
-            reply "发货时间：$delivery_date"
-        end
-        
-        if $global_status == "check_order"
-            reply "订单查询完成，请问还需要其他帮助吗？"
-        else
-            if $global_status == "return_request"
-                reply "订单信息已确认，是否为此订单申请退货？"
-            end
-        end
-    end
-
-intent "return_request"
+step "return_request"
     reply "了解您要退货的需求"
-    set global_status = "return_request"
     reply "请提供需要退货的订单号"
+    wait "provide_order_number"
 
-intent "confirm_return"
-    reply "已为您提交订单 $last_order 的退货申请"
+step "provide_order_number"
+    reply "已为您提交订单" + $user_input + "的退货申请"
     reply "客服将在24小时内联系您处理后续事宜"
-    set global_status = ""
-    log "退货申请：$last_order"
+    log "退货申请：" + $user_input
+    wait "greeting" "return_request" "return_request" "complaint" "ask_human_agent" "thankyou" "unknown"
 
-intent "complaint"
+step "complaint"
     reply "抱歉给您带来不便"
     reply "请简要描述您遇到的问题："
-    set global_status = "complaint"
+    wait "describe_issue"
 
-intent "describe_issue"
+step "describe_issue"
     reply "感谢您的反馈，我们已经记录"
     reply "客服专员将尽快联系您处理"
     reply "紧急问题可拨打热线：400-123-4567"
-    set global_status = ""
-    log "用户投诉：$user_input"
+    log "用户投诉：" + $user_input
+    wait "greeting" "return_request" "return_request" "complaint" "ask_human_agent" "thankyou" "unknown"
 
-intent "ask_human_agent"
-    reply "正在为您转接人工客服..."
+step "ask_human_agent"
+    reply "收到，稍候会有人工客服与您联系"
     log "请求人工客服"
+    wait "greeting" "return_request" "return_request" "complaint" "ask_human_agent" "thankyou" "unknown"
 
-intent "unknown"
-    if $global_status == "check_order"
-        reply "抱歉，我没有理解您关于订单查询的请求"
-        reply "请提供订单号（格式：ORDER123）或说明您的需求"
-    else
-        if $global_status == "return_request"
-            reply "抱歉，我没有理解您关于退货的请求"
-            reply "请提供订单号（格式：ORDER123）或确认是否申请退货"
-        else
-            reply "抱歉，我没有完全理解您的意思"
-            reply "您可以尝试以下方式："
-            reply "1. 查询订单状态"
-            reply "2. 申请退货"
-            reply "3. 联系人工客服"
-            reply "请问您需要哪项服务？"
-        end
-    end
+step "unknown"
+    reply "抱歉，我没有完全理解您的意思"
+    reply "您可以尝试以下方式："
+    reply "1. 申请退货"
+    reply "2. 投诉"
+    reply "3. 联系人工客服"
+    reply "请问您需要哪项服务？"
+    wait "greeting" "return_request" "return_request" "complaint" "ask_human_agent" "thankyou" "unknown"
 
-intent "thankyou"
+step "thankyou"
     reply "不客气！"
     reply "祝您生活愉快！"
-    set global_status = ""
-
-intent "reset"
-    reply "系统已重置"
-    set last_order = ""
-    set global_status = ""
-
-intent "help"
-    if $global_status == "check_order"
-        reply "=== 订单查询帮助 ==="
-        reply "请提供订单号（格式：ORDER123）"
-        reply "或输入'返回'回到主菜单"
-    else
-        if $global_status == "return_request"
-            reply "=== 退货申请帮助 ==="
-            reply "请提供订单号或确认退货申请"
-            reply "或输入'返回'取消退货流程"
-        else
-            reply "=== 可用功能 ==="
-            reply "订单管理 - 查询订单、退货申请"
-            reply "人工客服 - 转接人工服务"
-            reply "系统重置 - 清除当前会话数据"
-            reply "帮助信息 - 显示本提示"
-        end
-    end
+    wait "greeting" "return_request" "return_request" "complaint" "ask_human_agent" "thankyou" "unknown"
