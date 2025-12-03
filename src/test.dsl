@@ -1,159 +1,91 @@
-# 酒店预订客服机器人
-var
-    default_response = "您好，我是酒店预订助手，请问有什么可以帮您？"
-    customer_name = ""
-    checkin_date = ""
-    checkout_date = ""
-    room_type = ""
-    guest_count = 2
-    total_price = 0
-    booking_reference = ""
-    current_step = "welcome"
+step "welcome"
+    reply "欢迎来到美味餐厅！🍽️"
+    reply "我们可以为您提供："
+    reply "1. 餐厅订位"
+    reply "2. 菜单咨询" 
+    reply "3. 特色菜品介绍"
+    reply "4. 营业时间查询"
+    reply "请问您需要什么服务？"
+    wait "make_reservation" "menu_inquiry" "special_dishes" "business_hours" "unknown"
 
-intent "welcome"
-    reply "🏨 欢迎使用酒店预订系统！"
-    reply "我可以帮您：查询房型、预订房间、修改订单、查询价格"
-    set current_step = "main_menu"
+step "make_reservation"
+    reply "很高兴为您安排订位！"
+    reply "请问用餐人数是多少？"
+    wait "select_people_number"
 
-intent "ask_room_types"
-    reply "我们提供以下房型："
-    reply "1. 标准大床房 - ￥399/晚"
-    reply "2. 豪华双床房 - ￥499/晚" 
-    reply "3. 行政套房 - ￥899/晚"
-    reply "4. 总统套房 - ￥1599/晚"
-    log "用户查询房型信息"
+step "select_people_number"
+    log "人数" + $user_input
+    reply "已记录" + $user_input + "位用餐"
+    reply "请选择用餐日期（例如：今天、明天、12月25日）："
+    wait "select_time"
 
-intent "provide_checkin_date"
-    set checkin_date = $user_input
-    call date_valid = validate_date($checkin_date)
-    
-    if $date_valid == true
-        reply "✅ 入住日期已记录：$checkin_date"
-        set current_step = "get_checkout_date"
-        reply "请告诉我离店日期（格式：YYYY-MM-DD）"
-    else
-        reply "❌ 日期格式不正确，请使用 YYYY-MM-DD 格式"
-    end
-    log "用户提供入住日期：$checkin_date"
+step "select_time"
+    log "日期：" + $user_input
+    reply "已记录日期：" + $user_input
+    reply "请选择用餐时间（例如：18:00、晚上7点）："
+    wait "confirm_reservation"
 
-intent "provide_checkout_date"
-    set checkout_date = $user_input
-    
-    if $date_valid == true and $duration_valid == true
-        reply "✅ 离店日期已记录：$checkout_date"
-        set current_step = "select_room_type"
-        reply "请选择房型（1-4）或直接告诉我房型名称"
-    else
-        if $date_valid == false
-            reply "❌ 日期格式不正确"
-        else
-            reply "❌ 离店日期不能早于入住日期"
-        end
-    end
+step "confirm_reservation"
+    log "时间：" + $user_input
+    reply "已记录时间：" + $user_input
+    reply "请提供订位人姓名和联系电话："
+    wait "reservation_complete"
 
-intent "select_room_type"
-    set room_type = $user_input
-    call room_info = get_room_price($room_type)
-    
-    if $room_info != "unknown"
-        reply "✅ 已选择：$room_type"
-        set current_step = "confirm_guests"
-        reply "请问入住人数是多少？"
-    else
-        reply "❌ 房型选择无效，请重新选择"
-        reply "可用房型：标准大床房、豪华双床房、行政套房、总统套房"
-    end
+step "reservation_complete"
+    reply "姓名和联系电话：" + $user_input
+    reply "预订成功！✅"
+    reply "我们会提前15分钟与您确认，期待您的光临！"
+    wait "welcome" "menu_inquiry" "special_dishes" "business_hours" "thankyou"
 
-intent "provide_guest_count"
-    set guest_count = $user_input
-    call max_guests = get_max_guests($room_type)
-    
-    if $guest_count <= $max_guests
-        reply "✅ 入住人数：$guest_count 人"
-        call total_price = calculate_price($room_type, $checkin_date, $checkout_date, $guest_count)
-        reply "总价格：￥$total_price"
-        set current_step = "confirm_booking"
-        reply "请确认预订信息："
-        reply "入住：$checkin_date，离店：$checkout_date"
-        reply "房型：$room_type，人数：$guest_count"
-        reply "总价：￥$total_price"
-        reply "回复'确认'完成预订，或'取消'重新开始"
-    else
-        reply "❌ $room_type 最多容纳 $max_guests 人，请重新输入"
-    end
+step "menu_inquiry"
+    reply "这是我们的菜单："
+    reply "🍽️ 前菜："
+    reply "- 凯撒沙拉 ￥48"
+    reply "- 法式鹅肝 ￥128"
+    reply "🍖 主菜："
+    reply "- 澳洲牛排 ￥298"
+    reply "- 意大利面 ￥88"
+    reply "- 烤三文鱼 ￥158"
+    reply "🍰 甜点："
+    reply "- 提拉米苏 ￥58"
+    reply "- 巧克力熔岩 ￥68"
+    reply "需要了解哪道菜的详细信息吗？"
+    wait "dish_detail" "make_reservation" "welcome" "thankyou"
 
-intent "confirm_booking"
-    if $user_input == "确认"
-        call booking_ref = generate_booking_reference()
-        set booking_reference = $booking_ref
-        reply "🎉 预订成功！"
-        reply "预订号：$booking_reference"
-        reply "入住时间：下午2点后，离店时间：中午12点前"
-        reply "如需修改或取消，请提供预订号"
-        set current_step = "completed"
-        log "完成预订：$booking_reference"
-    else
-        reply "预订已取消，请重新开始"
-        set current_step = "welcome"
-    end
+step "dish_detail"
+    reply "为您介绍" + $user_input + "："
+    reply "这道菜选用最新鲜的食材，由我们主厨精心烹制。"
+    reply "需要为您预订品尝吗？"
+    wait "make_reservation" "menu_inquiry" "welcome" "thankyou"
 
-intent "ask_price"
-    if $room_type != "" and $checkin_date != "" and $checkout_date != ""
-        call total_price = calculate_price($room_type, $checkin_date, $checkout_date, $guest_count)
-        reply "💰 价格估算：￥$total_price"
-    else
-        reply "请先提供入住日期、离店日期和房型信息"
-    end
+step "special_dishes"
+    reply "本周特色菜品："
+    reply "🌟 主厨推荐：黑松露牛排 ￥358"
+    reply "🌟 季节限定：秋季松茸套餐 ￥458/位"
+    reply "🌟 海鲜特选：法式龙虾 ￥588"
+    reply "这些菜品都需要提前预订，您感兴趣吗？"
+    wait "make_reservation" "menu_inquiry" "welcome" "thankyou"
 
-intent "modify_booking"
-    reply "请提供您的预订号"
-    set current_step = "verify_booking"
+step "business_hours"
+    reply "营业时间："
+    reply "⏰ 周一至周五：11:00-14:00, 17:00-22:00"
+    reply "⏰ 周六周日：11:00-23:00"
+    reply "📍 地址：市中心美食街88号"
+    reply "📞 电话：400-123-4567"
+    reply "需要为您预订位子吗？"
+    wait "make_reservation" "welcome" "thankyou"
 
-intent "provide_booking_reference"
-    call booking_valid = verify_booking($user_input)
-    
-    if $booking_valid == true
-        set booking_reference = $user_input
-        reply "✅ 找到预订信息"
-        reply "请告诉我需要修改的内容：日期、房型或人数？"
-        set current_step = "modify_details"
-    else
-        reply "❌ 预订号无效，请检查后重新输入"
-    end
+step "thankyou"
+    reply "感谢您的咨询！"
+    reply "期待为您服务，祝您用餐愉快！😊"
+    wait "welcome" "make_reservation" "menu_inquiry" "special_dishes" "business_hours"
 
-intent "cancel_booking"
-    if $booking_reference != ""
-        call cancel_result = cancel_booking($booking_reference)
-        reply "预订已取消"
-        set booking_reference = ""
-        set current_step = "welcome"
-    else
-        reply "请先提供预订号"
-    end
-
-intent "ask_amenities"
-    reply "🏊 酒店设施包括："
-    reply "• 免费WiFi • 室内游泳池 • 健身中心"
-    reply "• 餐厅 • 停车场 • 商务中心"
-    reply "• 24小时前台服务"
-
-intent "ask_policies"
-    reply "📋 酒店政策："
-    reply "• 免费取消：入住前24小时"
-    reply "• 儿童政策：12岁以下免费"
-    reply "• 宠物政策：不允许携带宠物"
-    reply "• 吸烟政策：全酒店禁烟"
-
-intent "help"
-    reply "❓ 使用帮助："
-    reply "• 查询房型：回复'房型'或'有哪些房间'"
-    reply "• 开始预订：告诉我入住日期"
-    reply "• 修改订单：回复'修改订单'"
-    reply "• 价格查询：回复'价格'"
-    reply "• 取消预订：回复'取消'"
-
-intent "emergency"
-    reply "🚨 紧急联系："
-    reply "前台电话：400-123-4567"
-    reply "客服邮箱：support@hotel.com"
-    reply "如需紧急帮助，请直接拨打前台电话"
+step "unknown"
+    reply "抱歉，我没有完全理解您的需求。"
+    reply "我们可以为您提供："
+    reply "1. 餐厅订位"
+    reply "2. 菜单咨询"
+    reply "3. 特色菜品介绍" 
+    reply "4. 营业时间查询"
+    reply "请问您需要哪项服务？"
+    wait "make_reservation" "menu_inquiry" "special_dishes" "business_hours" "welcome"

@@ -290,9 +290,29 @@ class DSLEngine:
         """获取当前步骤"""
         return self.current_step
     
-    def start(self, initial_step: str = "greeting", initial_input: str = ""):
+    def start(self):
         """启动机器人交互循环"""
+        # 如果没有指定初始步骤，使用脚本中的第一个步骤
+        initial_step = self._get_first_step()
+        if not initial_step:
+            print("🤖: 脚本中没有找到可用的步骤")
+            return
+
         # 直接从初始步骤开始处理
-        response = self.process(initial_step, initial_input)
+        response = self.process(initial_step, "")
         if response:
             print(f"🤖: {response}")
+
+    def _get_first_step(self) -> str:
+        """获取脚本中的第一个步骤名称"""
+        if not self.ast or 'children' not in self.ast:
+            return ""
+        
+        # 查找第一个Step节点
+        for section in self.ast['children']:
+            if isinstance(section, dict) and section.get('type') == 'Step':
+                step_name = section.get('value', '')
+                if step_name:
+                    return step_name
+        
+        return ""
