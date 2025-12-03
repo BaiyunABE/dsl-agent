@@ -23,6 +23,9 @@ class Lexer:
         
         # 字面量
         'STRING', 'VARIABLE',
+
+        # 标识符
+        'ID',
     )
     
     # 保留关键字映射

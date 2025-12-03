@@ -1,7 +1,7 @@
-'''
+"""
 parser.py -
 DSL解析器模块，使用PLY实现词法分析和语法分析，将DSL脚本解析为字典格式的语法树。
-'''
+"""
 
 import ply.yacc as yacc
 from lexer import Lexer
@@ -44,7 +44,7 @@ class Parser:
     
     # Step 区块
     def p_step_section(self, p):
-        'step_section : STEP STRING statements'
+        'step_section : STEP ID statements'  # 修改：使用ID而不是STRING
         p[0] = self.create_node('Step', p[3], p[2], p.lineno(1))
     
     # 语句
@@ -95,15 +95,18 @@ class Parser:
     
     def p_simple_expression(self, p):
         '''simple_expression : STRING
-                            | VARIABLE'''
+                            | VARIABLE
+                            | ID'''  # 添加ID支持
         if p[1].startswith('$'):
             p[0] = self.create_node('Variable', value=p[1], lineno=p.lineno(1))
-        else:
+        elif p.slice[1].type == 'STRING':  # 明确检查token类型
             p[0] = self.create_node('String', value=p[1], lineno=p.lineno(1))
+        else:  # ID token
+            p[0] = self.create_node('Identifier', value=p[1], lineno=p.lineno(1))
     
     def p_error(self, p):
         if p:
-            print(f"语法错误 at line {p.lineno}: token '{p.value}'")
+            print(f"语法错误 at line {p.lineno}: token '{p.value}' (类型: {p.type})")
         else:
             print("语法错误: 意外的文件结束")
     
